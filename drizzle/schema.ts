@@ -57,6 +57,39 @@ export const skills = pgTable("skills", {
 export type Skill = typeof skills.$inferSelect;
 export type InsertSkill = typeof skills.$inferInsert;
 
+export const experiences = pgTable("experiences", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  organization: varchar("organization", { length: 255 }).notNull(),
+  location: varchar("location", { length: 255 }),
+  startDate: varchar("startDate", { length: 80 }).notNull(),
+  endDate: varchar("endDate", { length: 80 }).notNull(),
+  description: text("description").notNull(),
+  technologies: text("technologies").notNull(), // JSON array as string
+  order: integer("order").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Experience = typeof experiences.$inferSelect;
+export type InsertExperience = typeof experiences.$inferInsert;
+
+export const certificates = pgTable("certificates", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  issuer: varchar("issuer", { length: 255 }),
+  issuedDate: varchar("issuedDate", { length: 80 }).notNull(),
+  description: text("description").notNull(),
+  imageUrl: text("imageUrl"),
+  certificateUrl: text("certificateUrl"),
+  order: integer("order").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Certificate = typeof certificates.$inferSelect;
+export type InsertCertificate = typeof certificates.$inferInsert;
+
 export const testimonials = pgTable("testimonials", {
   id: serial("id").primaryKey(),
   authorName: varchar("authorName", { length: 255 }).notNull(),

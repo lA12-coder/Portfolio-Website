@@ -7,6 +7,7 @@ import { sdk } from "./sdk";
 
 const uploadRoot = path.resolve(import.meta.dirname, "../..", "uploads");
 const projectUploadDir = path.join(uploadRoot, "projects");
+const certificateUploadDir = path.join(uploadRoot, "certificates");
 const maxImageBytes = 5 * 1024 * 1024;
 
 const allowedMimeTypes: Record<string, string> = {
@@ -52,6 +53,7 @@ function parseDataUrl(dataUrl: string) {
 
 export function registerProjectUploads(app: Express) {
   fs.mkdirSync(projectUploadDir, { recursive: true });
+  fs.mkdirSync(certificateUploadDir, { recursive: true });
 
   app.use("/uploads", express.static(uploadRoot));
 
@@ -84,6 +86,42 @@ export function registerProjectUploads(app: Express) {
 
       res.json({
         url: `/uploads/projects/${fileName}`,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Image upload failed.";
+      res.status(400).json({ error: message });
+    }
+  });
+
+  app.post("/api/admin/certificate-image", async (req: Request, res: Response) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+
+      if (user.role !== "admin") {
+        res.status(403).json({ error: "Admin access required." });
+        return;
+      }
+
+      const body = req.body as ImageUploadBody;
+
+      if (!body.dataUrl) {
+        res.status(400).json({ error: "No image was provided." });
+        return;
+      }
+
+      const { buffer, extension } = parseDataUrl(body.dataUrl);
+      const safeBaseName = (body.fileName || "certificate-image")
+        .replace(/\.[^.]+$/, "")
+        .replace(/[^a-z0-9-_]+/gi, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 48) || "certificate-image";
+      const fileName = `${safeBaseName}-${nanoid(10)}.${extension}`;
+      const filePath = path.join(certificateUploadDir, fileName);
+
+      await fs.promises.writeFile(filePath, buffer);
+
+      res.json({
+        url: `/uploads/certificates/${fileName}`,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Image upload failed.";

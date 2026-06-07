@@ -7,6 +7,8 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import {
   getProjects,
   getSkills,
+  getExperiences,
+  getCertificates,
   getApprovedTestimonials,
   getAllTestimonials,
   createContactSubmission,
@@ -16,6 +18,12 @@ import {
   createSkill,
   updateSkill,
   deleteSkill,
+  createExperience,
+  updateExperience,
+  deleteExperience,
+  createCertificate,
+  updateCertificate,
+  deleteCertificate,
   createTestimonial,
   updateTestimonial,
   getContactSubmissions,
@@ -124,6 +132,42 @@ const skillInputSchema = z.object({
   order: z.number().int().min(0).max(999).default(0),
 });
 
+const experienceInputSchema = z.object({
+  title: z.string().min(2).max(255),
+  organization: z.string().min(2).max(255),
+  location: z.string().max(255).optional().or(z.literal("")),
+  startDate: z.string().min(2).max(80),
+  endDate: z.string().min(2).max(80),
+  description: z.string().min(10),
+  technologies: z.array(z.string().min(1).max(60)).max(20).default([]),
+  order: z.number().int().min(0).max(999).default(0),
+});
+
+const certificateImageUrlSchema = z
+  .string()
+  .refine(
+    (value) => {
+      if (value === "") return true;
+
+      if (/^\/uploads\/certificates\/[a-z0-9][a-z0-9._-]*\.(avif|gif|jpe?g|png|svg|webp)$/i.test(value)) {
+        return true;
+      }
+
+      return z.string().url().safeParse(value).success;
+    },
+    { message: "Use a valid image URL or upload a certificate image." }
+  );
+
+const certificateInputSchema = z.object({
+  title: z.string().min(2).max(255),
+  issuer: z.string().max(255).optional().or(z.literal("")),
+  issuedDate: z.string().min(2).max(80),
+  description: z.string().min(10),
+  imageUrl: certificateImageUrlSchema.optional(),
+  certificateUrl: z.string().url().optional().or(z.literal("")),
+  order: z.number().int().min(0).max(999).default(0),
+});
+
 function projectValues(input: z.infer<typeof projectInputSchema>) {
   return {
     ...input,
@@ -131,6 +175,23 @@ function projectValues(input: z.infer<typeof projectInputSchema>) {
     projectUrl: input.projectUrl || null,
     githubUrl: input.githubUrl || null,
     technologies: JSON.stringify(input.technologies),
+  };
+}
+
+function experienceValues(input: z.infer<typeof experienceInputSchema>) {
+  return {
+    ...input,
+    location: input.location || null,
+    technologies: JSON.stringify(input.technologies),
+  };
+}
+
+function certificateValues(input: z.infer<typeof certificateInputSchema>) {
+  return {
+    ...input,
+    issuer: input.issuer || null,
+    imageUrl: input.imageUrl || null,
+    certificateUrl: input.certificateUrl || null,
   };
 }
 
@@ -192,6 +253,12 @@ export const appRouter = router({
     }),
     getSkills: publicProcedure.query(async () => {
       return getSkills();
+    }),
+    getExperiences: publicProcedure.query(async () => {
+      return getExperiences();
+    }),
+    getCertificates: publicProcedure.query(async () => {
+      return getCertificates();
     }),
     getTestimonials: publicProcedure.query(async () => {
       return getApprovedTestimonials();
@@ -519,6 +586,48 @@ export const appRouter = router({
       .input(z.object({ id: z.number().int().positive() }))
       .mutation(async ({ input }) => {
         await deleteSkill(input.id);
+        return { success: true };
+      }),
+    getExperiences: adminProcedure.query(async () => {
+      return getExperiences();
+    }),
+    createExperience: adminProcedure
+      .input(experienceInputSchema)
+      .mutation(async ({ input }) => {
+        await createExperience(experienceValues(input));
+        return { success: true };
+      }),
+    updateExperience: adminProcedure
+      .input(z.object({ id: z.number().int().positive(), data: experienceInputSchema }))
+      .mutation(async ({ input }) => {
+        await updateExperience(input.id, experienceValues(input.data));
+        return { success: true };
+      }),
+    deleteExperience: adminProcedure
+      .input(z.object({ id: z.number().int().positive() }))
+      .mutation(async ({ input }) => {
+        await deleteExperience(input.id);
+        return { success: true };
+      }),
+    getCertificates: adminProcedure.query(async () => {
+      return getCertificates();
+    }),
+    createCertificate: adminProcedure
+      .input(certificateInputSchema)
+      .mutation(async ({ input }) => {
+        await createCertificate(certificateValues(input));
+        return { success: true };
+      }),
+    updateCertificate: adminProcedure
+      .input(z.object({ id: z.number().int().positive(), data: certificateInputSchema }))
+      .mutation(async ({ input }) => {
+        await updateCertificate(input.id, certificateValues(input.data));
+        return { success: true };
+      }),
+    deleteCertificate: adminProcedure
+      .input(z.object({ id: z.number().int().positive() }))
+      .mutation(async ({ input }) => {
+        await deleteCertificate(input.id);
         return { success: true };
       }),
     getContactSubmissions: adminProcedure.query(async () => {

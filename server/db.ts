@@ -6,6 +6,8 @@ import {
   users,
   projects,
   skills,
+  experiences,
+  certificates,
   testimonials,
   contactSubmissions,
   ragKnowledgeBase,
@@ -13,6 +15,8 @@ import {
   resumeAnalyzerLogs,
   InsertProject,
   InsertSkill,
+  InsertExperience,
+  InsertCertificate,
   InsertTestimonial,
   InsertContactSubmission,
   InsertRagKnowledgeBase,
@@ -168,6 +172,54 @@ export async function deleteSkill(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(skills).where(eq(skills.id, id));
+}
+
+export async function getExperiences() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(experiences).orderBy(experiences.order);
+}
+
+export async function createExperience(data: InsertExperience) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(experiences).values(data);
+}
+
+export async function updateExperience(id: number, data: Partial<InsertExperience>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(experiences).set(data).where(eq(experiences.id, id));
+}
+
+export async function deleteExperience(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(experiences).where(eq(experiences.id, id));
+}
+
+export async function getCertificates() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(certificates).orderBy(certificates.order);
+}
+
+export async function createCertificate(data: InsertCertificate) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(certificates).values(data);
+}
+
+export async function updateCertificate(id: number, data: Partial<InsertCertificate>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(certificates).set(data).where(eq(certificates.id, id));
+}
+
+export async function deleteCertificate(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(certificates).where(eq(certificates.id, id));
 }
 
 export async function getApprovedTestimonials() {

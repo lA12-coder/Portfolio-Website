@@ -270,7 +270,7 @@ export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
             {/* Branding */}
             <div className="space-y-4">
               <h1 className="text-4xl font-bold tracking-tight">
-                <span className="text-gradient">Lidet</span>
+                <span className="text-gradient">Lidet Admassu</span>
               </h1>
               <p className="text-lg text-foreground/80 font-light">
                 Software Engineer & AI Specialist

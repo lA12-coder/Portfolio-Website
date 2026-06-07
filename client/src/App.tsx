@@ -20,11 +20,6 @@ function Router() {
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - Theme is now switchable with system preference detection and localStorage persistence
-
 function App() {
   return (
     <ErrorBoundary>

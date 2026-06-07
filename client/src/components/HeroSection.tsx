@@ -29,7 +29,10 @@ export default function HeroSection({ onViewWork, onContact }: HeroSectionProps)
           </h2>
 
           <p className="text-lg text-muted-foreground leading-relaxed max-w-lg">
-            I'm a final-year software engineering student passionate about building elegant, high-performance applications. Specializing in full-stack development, AI integration, and creating intuitive user experiences that solve real problems.
+            I'm a software engineering student passionate about building elegant,
+            high-performance and highly secure web applications and ERP systems. 
+            I am Specializing in full-stack development, 
+            AI integration, and creating intuitive user experiences that solve real problems.
           </p>
         </div>
 

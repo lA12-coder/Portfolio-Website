@@ -9,10 +9,10 @@ import { toast } from 'sonner';
 const fallbackTestimonials = [
   {
     id: 1,
-    author: 'Sarah Johnson',
+    author: 'Natnael Tadesse',
     title: 'CEO',
-    company: 'TechStart Inc.',
-    content: 'Working with Lidet was an absolute pleasure. He delivered our website ahead of schedule and exceeded all our expectations. The attention to detail and understanding of our brand was impressive.',
+    company: 'Phoenixopia Solution.',
+    content: 'Working with Lidet was an absolute pleasure. He delivered his tasks ahead of schedule and exceeded all our expectations. The attention to detail, understanding of software architecture, and commitment to quality were evident in every aspect of the project. I highly recommend Lidet to anyone looking for a talented and reliable web developer.',
     rating: 5,
   },
   {
