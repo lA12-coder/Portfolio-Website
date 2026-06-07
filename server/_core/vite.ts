@@ -7,10 +7,29 @@ import { createServer as createViteServer } from "vite";
 import viteConfig from "../../vite.config";
 
 export async function setupVite(app: Express, server: Server) {
+  const existingIgnored = viteConfig.server?.watch?.ignored;
+  const ignored = Array.isArray(existingIgnored)
+    ? existingIgnored
+    : existingIgnored
+      ? [existingIgnored]
+      : [];
+
   const serverOptions = {
+    ...viteConfig.server,
     middlewareMode: true,
     hmr: { server },
     allowedHosts: true as const,
+    watch: {
+      ...viteConfig.server?.watch,
+      usePolling: true,
+      interval: 300,
+      ignored: [
+        ...ignored,
+        "**/node_modules/**",
+        "**/.git/**",
+        "**/.manus-logs/**",
+      ],
+    },
   };
 
   const vite = await createViteServer({
@@ -58,7 +77,20 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
+  app.use(express.static(distPath, {
+    maxAge: "1y",
+    immutable: true,
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith("index.html") || filePath.endsWith("sw.js")) {
+        res.setHeader("Cache-Control", "no-store");
+        return;
+      }
+
+      if (/\.(?:js|css|png|jpe?g|webp|avif|svg|gif|ico|woff2?)$/i.test(filePath)) {
+        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      }
+    },
+  }));
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {

@@ -1,12 +1,16 @@
-import React, { useRef } from 'react';
+import React, { Suspense, lazy, useRef } from 'react';
 import PortfolioLayout from '@/components/PortfolioLayout';
 import HeroSection from '@/components/HeroSection';
 import AboutSection from '@/components/AboutSection';
 import PortfolioSection from '@/components/PortfolioSection';
 import ResumeSection from '@/components/ResumeSection';
-import InteractiveFeaturesSection from '@/components/InteractiveFeaturesSection';
+import BlogSection from '@/components/BlogSection';
+import NewsletterSection from '@/components/NewsletterSection';
 import TestimonialsSection from '@/components/TestimonialsSection';
+import FAQSection from '@/components/FAQSection';
 import ContactSection from '@/components/ContactSection';
+
+const InteractiveFeaturesSection = lazy(() => import('@/components/InteractiveFeaturesSection'));
 
 export default function Home() {
   const portfolioRef = useRef<HTMLDivElement>(null);
@@ -28,8 +32,13 @@ export default function Home() {
         <PortfolioSection />
       </div>
       <ResumeSection />
-      <InteractiveFeaturesSection />
+      <BlogSection />
+      <NewsletterSection />
+      <Suspense fallback={<div className="mx-6 h-80 max-w-4xl animate-pulse rounded-lg border border-white/10 bg-white/5 md:mx-12" />}>
+        <InteractiveFeaturesSection />
+      </Suspense>
       <TestimonialsSection />
+      <FAQSection />
       <div ref={contactRef}>
         <ContactSection />
       </div>

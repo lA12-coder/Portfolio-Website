@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react';
-import { Github, Linkedin, Mail, Menu } from 'lucide-react';
+import { Github, Linkedin, Mail, Menu, Send} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from '@/components/ThemeToggle';
 import type { VisualMode, WeatherMood } from '@/components/ThreeMesh';
@@ -30,6 +30,7 @@ const sectionModes: Record<string, VisualMode> = {
   about: 'craft',
   portfolio: 'systems',
   experience: 'ai',
+  blog: 'systems',
   interactive: 'ai',
   testimonials: 'origin',
   contact: 'contact',
@@ -52,10 +53,12 @@ export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
     { href: '#about', label: 'About' },
     { href: '#portfolio', label: 'Portfolio' },
     { href: '#experience', label: 'Experience' },
+    { href: '#blog', label: 'Blog' },
     { href: '#interactive', label: 'Lab' },
     { href: '#testimonials', label: 'Feedback' },
     { href: '#contact', label: 'Contact' },
   ];
+  const getNavHref = (href: string) => (window.location.pathname === '/' ? href : `/${href}`);
 
   useEffect(() => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -208,7 +211,7 @@ export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
                 {navItems.map((item) => (
                   <SheetClose asChild key={item.href}>
                     <a
-                      href={item.href}
+                      href={getNavHref(item.href)}
                       className="rounded-lg px-3 py-3 text-sm font-medium text-muted-foreground hover:bg-white/5 hover:text-foreground smooth-transition"
                     >
                       {item.label}
@@ -285,7 +288,7 @@ export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
               {navItems.map((item) => (
                 <a
                   key={item.href}
-                  href={item.href}
+                  href={getNavHref(item.href)}
                   className={`block text-sm font-medium smooth-transition ${
                     activeSection === item.href.slice(1)
                       ? 'translate-x-1 text-foreground'
@@ -331,6 +334,24 @@ export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
                 aria-label="Email"
               >
                 <Mail size={20} className="text-muted-foreground hover:text-foreground" />
+              </a>
+              <a
+                href='https://t.me/LA1623'
+                target='_blank'
+                rel="noopener noreferrer"
+                  className="p-2 rounded-lg bg-background/70 hover:bg-accent/15 smooth-transition border border-border/70 backdrop-blur"
+                  aria-label="Telegram"
+              >
+                <Send size={20} className="text-muted-foreground hover:text-foreground" />
+              </a>
+              <a 
+               href='https://leetcode.com/LILAD1/'
+              target='_blank'
+               rel="noopener noreferrer"
+                className="p-2 rounded-lg bg-background/70 hover:bg-accent/15 smooth-transition border border-border/70 backdrop-blur"
+                aria-label="LeetCode"
+              >
+                <span className="block min-w-5 text-center text-sm font-bold text-muted-foreground hover:text-foreground">LC</span>
               </a>
             </div>
 

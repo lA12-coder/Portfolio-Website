@@ -340,7 +340,7 @@ export default function AboutSection() {
                   <a
                     href={certificate.certificateUrl}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="mt-5 inline-flex w-fit items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground smooth-transition hover:bg-accent/90"
                   >
                     View Certificate

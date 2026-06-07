@@ -103,8 +103,9 @@ export default function ContactSection() {
           <div>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Your Name</label>
+                <label htmlFor="contact-name" className="text-sm font-medium text-foreground">Your Name</label>
                 <Input
+                  id="contact-name"
                   type="text"
                   placeholder="John Doe"
                   value={formData.name}
@@ -115,8 +116,9 @@ export default function ContactSection() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Email</label>
+                <label htmlFor="contact-email" className="text-sm font-medium text-foreground">Email</label>
                 <Input
+                  id="contact-email"
                   type="email"
                   placeholder="john@example.com"
                   value={formData.email}
@@ -127,8 +129,9 @@ export default function ContactSection() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Message</label>
+                <label htmlFor="contact-message" className="text-sm font-medium text-foreground">Message</label>
                 <Textarea
+                  id="contact-message"
                   placeholder="Tell me about your project or inquiry..."
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}

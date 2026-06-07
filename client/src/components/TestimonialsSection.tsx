@@ -127,8 +127,9 @@ export default function TestimonialsSection() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Your Name</label>
+                <label htmlFor="feedback-name" className="text-sm font-medium text-foreground">Your Name</label>
                 <Input
+                  id="feedback-name"
                   type="text"
                   placeholder="John Doe"
                   value={formData.name}
@@ -138,8 +139,9 @@ export default function TestimonialsSection() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Email</label>
+                <label htmlFor="feedback-email" className="text-sm font-medium text-foreground">Email</label>
                 <Input
+                  id="feedback-email"
                   type="email"
                   placeholder="john@example.com"
                   value={formData.email}
@@ -151,8 +153,9 @@ export default function TestimonialsSection() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Company / Position</label>
+              <label htmlFor="feedback-company" className="text-sm font-medium text-foreground">Company / Position</label>
               <Input
+                id="feedback-company"
                 type="text"
                 placeholder="Your company or position"
                 value={formData.company}
@@ -168,6 +171,7 @@ export default function TestimonialsSection() {
                   <button
                     key={rating}
                     type="button"
+                    aria-label={`Set rating to ${rating} star${rating === 1 ? '' : 's'}`}
                     onClick={() => setFormData({ ...formData, rating })}
                     className="smooth-transition"
                   >
@@ -185,8 +189,9 @@ export default function TestimonialsSection() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Your Feedback</label>
+              <label htmlFor="feedback-message" className="text-sm font-medium text-foreground">Your Feedback</label>
               <Textarea
+                id="feedback-message"
                 placeholder="Share your experience working with me..."
                 value={formData.feedback}
                 onChange={(e) => setFormData({ ...formData, feedback: e.target.value })}

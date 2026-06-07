@@ -858,7 +858,7 @@ export default function ContentManagementTab() {
                       <p className="text-xs text-muted-foreground">Issued: {certificate.issuedDate}</p>
                       <p className="text-sm text-muted-foreground line-clamp-2">{certificate.description}</p>
                       {certificate.certificateUrl && (
-                        <a href={certificate.certificateUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline">
+                        <a href={certificate.certificateUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline">
                           View Certificate
                           <ExternalLink size={13} />
                         </a>

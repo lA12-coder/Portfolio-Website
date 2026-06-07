@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/_core/hooks/useAuth';
 import { useLocation } from 'wouter';
-import { Database, LayoutDashboard, Loader2, LogIn, LogOut } from 'lucide-react';
+import { Database, FileText, LayoutDashboard, Loader2, LogIn, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getLoginUrl } from '@/const';
@@ -10,6 +10,7 @@ import TestimonialsTab from '@/components/admin/TestimonialsTab';
 import ChatLogsTab from '@/components/admin/ChatLogsTab';
 import RagKnowledgeBaseTab from '@/components/admin/RagKnowledgeBaseTab';
 import ContentManagementTab from '@/components/admin/ContentManagementTab';
+import BlogManagementTab from '@/components/admin/BlogManagementTab';
 import ThemeToggle from '@/components/ThemeToggle';
 
 export default function AdminDashboard() {
@@ -119,7 +120,7 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-12">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 border border-white/10 bg-white/5 p-1 md:grid-cols-5 mb-8">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 border border-white/10 bg-white/5 p-1 md:grid-cols-6 mb-8">
             <TabsTrigger value="submissions">Contact Submissions</TabsTrigger>
             <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
             <TabsTrigger value="chatlogs">Chat Logs</TabsTrigger>
@@ -127,6 +128,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="content">
               <Database size={15} className="mr-1" />
               Content
+            </TabsTrigger>
+            <TabsTrigger value="blog">
+              <FileText size={15} className="mr-1" />
+              Blog
             </TabsTrigger>
           </TabsList>
 
@@ -178,6 +183,16 @@ export default function AdminDashboard() {
               </p>
             </div>
             <ContentManagementTab />
+          </TabsContent>
+
+          <TabsContent value="blog" className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Technical Blog</h2>
+              <p className="text-muted-foreground">
+                Write MDX-style posts, manage drafts, and publish articles shown on the portfolio.
+              </p>
+            </div>
+            <BlogManagementTab />
           </TabsContent>
         </Tabs>
       </main>

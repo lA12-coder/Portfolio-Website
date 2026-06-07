@@ -9,6 +9,12 @@ import {
   getSkills,
   getExperiences,
   getCertificates,
+  getPublishedBlogPosts,
+  getBlogPostBySlug,
+  getBlogPostById,
+  getAllBlogPosts,
+  subscribeToNewsletter,
+  getActiveNewsletterSubscribers,
   getApprovedTestimonials,
   getAllTestimonials,
   createContactSubmission,
@@ -24,6 +30,9 @@ import {
   createCertificate,
   updateCertificate,
   deleteCertificate,
+  createBlogPost,
+  updateBlogPost,
+  deleteBlogPost,
   createTestimonial,
   updateTestimonial,
   getContactSubmissions,
@@ -40,7 +49,7 @@ import {
   createChatLog,
   createResumeAnalyzerLog,
 } from "./db";
-import { notifyOwner } from "./_core/notification";
+import { notifyNewsletterSubscribers, notifyOwner } from "./_core/notification";
 import { invokeLLM } from "./_core/llm";
 import {
   LIDET_PROFILE_CONTEXT,
@@ -50,6 +59,11 @@ import {
   searchKnowledgeBase,
   searchTextChunks,
 } from "./rag";
+import {
+  analyzeJobDescription,
+  blogPostValues,
+  fallbackRagAnswer,
+} from "./portfolioLogic";
 
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.user.role !== "admin") {
@@ -58,37 +72,6 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 
   return next({ ctx });
 });
-
-const technicalKeywords = [
-  "react",
-  "typescript",
-  "javascript",
-  "html",
-  "css",
-  "tailwind",
-  "django",
-  "node",
-  "express",
-  "mysql",
-  "postgresql",
-  "rest",
-  "api",
-  "authentication",
-  "authorization",
-  "docker",
-  "aws",
-  "next.js",
-  "vite",
-  "python",
-  "ai",
-  "llm",
-  "rag",
-  "embeddings",
-  "frontend",
-  "backend",
-  "full-stack",
-  "ui/ux",
-];
 
 const projectImageUrlSchema = z
   .string()
@@ -168,6 +151,18 @@ const certificateInputSchema = z.object({
   order: z.number().int().min(0).max(999).default(0),
 });
 
+const blogPostInputSchema = z.object({
+  title: z.string().min(2).max(255),
+  slug: z.string().min(2).max(180),
+  excerpt: z.string().min(10).max(700),
+  content: z.string().min(20),
+  coverImageUrl: projectImageUrlSchema.optional(),
+  tags: z.array(z.string().min(1).max(60)).max(12).default([]),
+  isPublished: z.number().int().min(0).max(1).default(0),
+  publishedAt: z.string().optional().or(z.literal("")),
+  order: z.number().int().min(0).max(999).default(0),
+});
+
 function projectValues(input: z.infer<typeof projectInputSchema>) {
   return {
     ...input,
@@ -195,43 +190,15 @@ function certificateValues(input: z.infer<typeof certificateInputSchema>) {
   };
 }
 
-function fallbackRagAnswer(question: string, context: string) {
-  const normalized = question.toLowerCase();
+async function notifySubscribersForPost(post: { title: string; excerpt: string; slug: string; isPublished: number | null }) {
+  if (post.isPublished !== 1) return;
 
-  if (normalized.includes("contact") || normalized.includes("email") || normalized.includes("phone")) {
-    return "You can reach Lidet at lidetadmassu217@outlook.com or +251-931460438. She is based in Addis Ababa, Ethiopia.";
-  }
-
-  if (normalized.includes("project") || normalized.includes("portfolio")) {
-    return "Lidet's highlighted projects include Beauty House, Fitness Website, GeezGeeks, and Ecommerce API. They cover React/TypeScript frontends, Django REST APIs, startup websites, and e-commerce backend systems.";
-  }
-
-  if (normalized.includes("skill") || normalized.includes("tech")) {
-    return "Lidet's strongest skills include HTML/CSS, JavaScript, React, TypeScript, Django, REST APIs, database design, Tailwind CSS, and AI integration with LLM/RAG systems.";
-  }
-
-  if (normalized.includes("experience") || normalized.includes("work") || normalized.includes("insa")) {
-    return "Lidet worked as a Fullstack Web Developer Intern at INSA from 2024 to 2025, contributing to Sirkuni, a secure government communications tool, with React, Django, REST APIs, and secure authentication work.";
-  }
-
-  return `Based on Lidet's portfolio: ${context.slice(0, 700)}${context.length > 700 ? "..." : ""}`;
-}
-
-function analyzeJobDescription(jobDescription: string) {
-  const lowerDescription = jobDescription.toLowerCase();
-  const matchedKeywords = technicalKeywords.filter((keyword) => lowerDescription.includes(keyword));
-  const coreStrengths = ["react", "typescript", "javascript", "django", "rest", "api", "mysql", "frontend", "backend"];
-  const missingCore = coreStrengths.filter((keyword) => lowerDescription.includes(keyword) && !matchedKeywords.includes(keyword));
-  const requestedButUnlisted = ["kubernetes", "graphql", "java", "spring", "go", "ruby", "angular", "vue", "mobile", "react native"].filter((keyword) => lowerDescription.includes(keyword));
-  const scoreBase = Math.round((matchedKeywords.length / Math.max(technicalKeywords.length * 0.42, 1)) * 100);
-  const matchScore = Math.min(95, Math.max(28, scoreBase + (lowerDescription.includes("junior") || lowerDescription.includes("intern") ? 12 : 0)));
-
-  return {
-    matchScore,
-    matchedKeywords,
-    skillGaps: Array.from(new Set([...missingCore, ...requestedButUnlisted])).slice(0, 8),
-    pitch: "Lidet is a strong fit for roles needing a full-stack engineer with React, TypeScript, Django, REST API, database, and AI integration experience. Her INSA work shows she can contribute to secure backend systems while still caring about polished user-facing experiences.",
-  };
+  const subscribers = await getActiveNewsletterSubscribers();
+  await notifyNewsletterSubscribers(subscribers, {
+    title: post.title,
+    excerpt: post.excerpt,
+    slug: post.slug,
+  });
 }
 
 export const appRouter = router({
@@ -260,9 +227,43 @@ export const appRouter = router({
     getCertificates: publicProcedure.query(async () => {
       return getCertificates();
     }),
+    getBlogPosts: publicProcedure.query(async () => {
+      return getPublishedBlogPosts();
+    }),
+    getBlogPostBySlug: publicProcedure
+      .input(z.object({ slug: z.string().min(1).max(180) }))
+      .query(async ({ input }) => {
+        const post = await getBlogPostBySlug(input.slug);
+
+        if (!post || post.isPublished !== 1) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Blog post not found." });
+        }
+
+        return post;
+      }),
     getTestimonials: publicProcedure.query(async () => {
       return getApprovedTestimonials();
     }),
+  }),
+  newsletter: router({
+    subscribe: publicProcedure
+      .input(z.object({
+        email: z.string().trim().email().max(320),
+      }))
+      .mutation(async ({ input }) => {
+        await subscribeToNewsletter({
+          email: input.email.toLowerCase(),
+          isActive: 1,
+        });
+
+        await notifyOwner({
+          title: "New Newsletter Subscriber",
+          content: `${input.email.toLowerCase()} subscribed to blog updates.`,
+          replyTo: input.email.toLowerCase(),
+        });
+
+        return { success: true };
+      }),
   }),
   contact: router({
     submit: publicProcedure
@@ -276,6 +277,7 @@ export const appRouter = router({
         await notifyOwner({
           title: "New Contact Form Submission",
           content: `From: ${input.name} (${input.email})\n\n${input.message}`,
+          replyTo: input.email,
         });
         return { success: true };
       }),
@@ -628,6 +630,36 @@ export const appRouter = router({
       .input(z.object({ id: z.number().int().positive() }))
       .mutation(async ({ input }) => {
         await deleteCertificate(input.id);
+        return { success: true };
+      }),
+    getBlogPosts: adminProcedure.query(async () => {
+      return getAllBlogPosts();
+    }),
+    createBlogPost: adminProcedure
+      .input(blogPostInputSchema)
+      .mutation(async ({ input }) => {
+        const values = blogPostValues(input);
+        await createBlogPost(values);
+        await notifySubscribersForPost(values);
+        return { success: true };
+      }),
+    updateBlogPost: adminProcedure
+      .input(z.object({ id: z.number().int().positive(), data: blogPostInputSchema }))
+      .mutation(async ({ input }) => {
+        const existingPost = await getBlogPostById(input.id);
+        const values = blogPostValues(input.data);
+        await updateBlogPost(input.id, values);
+
+        if (values.isPublished === 1 && existingPost?.isPublished !== 1) {
+          await notifySubscribersForPost(values);
+        }
+
+        return { success: true };
+      }),
+    deleteBlogPost: adminProcedure
+      .input(z.object({ id: z.number().int().positive() }))
+      .mutation(async ({ input }) => {
+        await deleteBlogPost(input.id);
         return { success: true };
       }),
     getContactSubmissions: adminProcedure.query(async () => {

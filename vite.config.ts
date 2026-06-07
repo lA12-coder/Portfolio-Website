@@ -150,7 +150,34 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
+function vitePluginAnalyticsScript(): Plugin {
+  return {
+    name: "portfolio-analytics-script",
+    transformIndexHtml(html) {
+      const endpoint = process.env.VITE_ANALYTICS_ENDPOINT;
+      const websiteId = process.env.VITE_ANALYTICS_WEBSITE_ID;
+      const siteUrl = (process.env.VITE_SITE_URL || process.env.PUBLIC_SITE_URL || "https://lidet-admassu.com").replace(/\/$/, "");
+
+      let nextHtml = html.replaceAll("%SITE_URL%", siteUrl);
+
+      if (!endpoint || !websiteId) {
+        return nextHtml.replace(/<script\s+defer\s+src="%VITE_ANALYTICS_ENDPOINT%\/umami"\s+data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"><\/script>/, "");
+      }
+
+      return nextHtml
+        .replace("%VITE_ANALYTICS_ENDPOINT%", endpoint.replace(/\/$/, ""))
+        .replace("%VITE_ANALYTICS_WEBSITE_ID%", websiteId);
+    },
+  };
+}
+
+const isProductionBuild = process.env.npm_lifecycle_event === "build";
+const plugins = [
+  react(),
+  tailwindcss(),
+  ...(isProductionBuild ? [] : [jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()]),
+  vitePluginAnalyticsScript(),
+];
 
 export default defineConfig({
   plugins,
@@ -167,6 +194,45 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    cssCodeSplit: true,
+    modulePreload: {
+      resolveDependencies(_filename, deps) {
+        return deps.filter((dep) => !dep.includes("markdown") && !dep.includes("three"));
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return undefined;
+          if (
+            id.includes("katex") ||
+            id.includes("mermaid") ||
+            id.includes("cytoscape") ||
+            id.includes("d3-") ||
+            id.includes("dagre") ||
+            id.includes("elkjs")
+          ) return "markdown-diagrams";
+          if (
+            id.includes("streamdown") ||
+            id.includes("remark") ||
+            id.includes("rehype") ||
+            id.includes("unified") ||
+            id.includes("micromark") ||
+            id.includes("hast") ||
+            id.includes("mdast") ||
+            id.includes("unist") ||
+            id.includes("lowlight") ||
+            id.includes("highlight") ||
+            id.includes("shiki")
+          ) return "markdown";
+          if (id.includes("@react-three") || id.includes("/three/")) return "three";
+          if (id.includes("@tanstack") || id.includes("@trpc") || id.includes("superjson")) return "api";
+          if (id.includes("@radix-ui")) return "ui";
+          if (id.includes("react-dom") || id.includes("react")) return "react";
+          return "vendor";
+        },
+      },
+    },
   },
   server: {
     host: true,
