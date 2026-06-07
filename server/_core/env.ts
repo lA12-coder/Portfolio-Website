@@ -1,0 +1,18 @@
+export const ENV = {
+  appId: process.env.GOOGLE_CLIENT_ID ?? process.env.VITE_GOOGLE_CLIENT_ID ?? "",
+  cookieSecret: process.env.JWT_SECRET ?? "",
+  databaseUrl: process.env.DATABASE_URL ?? "",
+  googleClientId: process.env.GOOGLE_CLIENT_ID ?? process.env.VITE_GOOGLE_CLIENT_ID ?? "",
+  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+  ownerGoogleSub: process.env.OWNER_GOOGLE_SUB ?? "",
+  ownerEmail: process.env.OWNER_EMAIL ?? "",
+  isProduction: process.env.NODE_ENV === "production",
+  groqApiUrl: process.env.GROQ_API_URL ?? "https://api.groq.com/openai/v1",
+  groqApiKey: process.env.GROQ_API_KEY ?? "",
+  groqModel: process.env.GROQ_MODEL ?? "llama-3.3-70b-versatile",
+  huggingFaceApiKey: process.env.HUGGINGFACE_API_KEY ?? process.env.HF_TOKEN ?? "",
+  huggingFaceEmbeddingModel: process.env.HUGGINGFACE_EMBEDDING_MODEL ?? "sentence-transformers/all-MiniLM-L6-v2",
+  huggingFaceEmbeddingUrl: process.env.HUGGINGFACE_EMBEDDING_URL ?? "",
+  forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
+  forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+};
