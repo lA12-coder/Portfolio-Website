@@ -3,7 +3,7 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import fs from "node:fs";
 import path from "node:path";
-import { defineConfig, type Plugin, type ViteDevServer } from "vite";
+import { defineConfig, loadEnv, type Plugin, type ViteDevServer } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 
 // =============================================================================
@@ -154,18 +154,22 @@ function vitePluginAnalyticsScript(): Plugin {
   return {
     name: "portfolio-analytics-script",
     transformIndexHtml(html) {
-      const endpoint = process.env.VITE_ANALYTICS_ENDPOINT;
-      const websiteId = process.env.VITE_ANALYTICS_WEBSITE_ID;
-      const siteUrl = (process.env.VITE_SITE_URL || process.env.PUBLIC_SITE_URL || "https://lidet-admassu.com").replace(/\/$/, "");
+      const viteEnv = loadEnv(process.env.NODE_ENV === "production" ? "production" : "development", PROJECT_ROOT, "");
+      const endpoint = process.env.VITE_ANALYTICS_ENDPOINT || viteEnv.VITE_ANALYTICS_ENDPOINT;
+      const websiteId = process.env.VITE_ANALYTICS_WEBSITE_ID || viteEnv.VITE_ANALYTICS_WEBSITE_ID;
+      const siteUrl = (process.env.VITE_SITE_URL || process.env.PUBLIC_SITE_URL || viteEnv.VITE_SITE_URL || viteEnv.PUBLIC_SITE_URL || "https://lidet-admassu.com").replace(/\/$/, "");
 
       let nextHtml = html.replaceAll("%SITE_URL%", siteUrl);
 
       if (!endpoint || !websiteId) {
-        return nextHtml.replace(/<script\s+defer\s+src="%VITE_ANALYTICS_ENDPOINT%\/umami"\s+data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"><\/script>/, "");
+        return nextHtml.replace(/<script[\s\S]*?src="%VITE_ANALYTICS_ENDPOINT%"[\s\S]*?data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"[\s\S]*?<\/script>/, "");
       }
 
+      const normalizedEndpoint = endpoint.replace(/\/$/, "").replace(/\/umami$/, "");
+      const scriptUrl = normalizedEndpoint.endsWith(".js") ? normalizedEndpoint : `${normalizedEndpoint}/umami`;
+
       return nextHtml
-        .replace("%VITE_ANALYTICS_ENDPOINT%", endpoint.replace(/\/$/, ""))
+        .replace("%VITE_ANALYTICS_ENDPOINT%", scriptUrl)
         .replace("%VITE_ANALYTICS_WEBSITE_ID%", websiteId);
     },
   };
@@ -195,41 +199,15 @@ export default defineConfig({
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
     cssCodeSplit: true,
-    modulePreload: {
-      resolveDependencies(_filename, deps) {
-        return deps.filter((dep) => !dep.includes("markdown") && !dep.includes("three"));
-      },
-    },
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (!id.includes("node_modules")) return undefined;
-          if (
-            id.includes("katex") ||
-            id.includes("mermaid") ||
-            id.includes("cytoscape") ||
-            id.includes("d3-") ||
-            id.includes("dagre") ||
-            id.includes("elkjs")
-          ) return "markdown-diagrams";
-          if (
-            id.includes("streamdown") ||
-            id.includes("remark") ||
-            id.includes("rehype") ||
-            id.includes("unified") ||
-            id.includes("micromark") ||
-            id.includes("hast") ||
-            id.includes("mdast") ||
-            id.includes("unist") ||
-            id.includes("lowlight") ||
-            id.includes("highlight") ||
-            id.includes("shiki")
-          ) return "markdown";
           if (id.includes("@react-three") || id.includes("/three/")) return "three";
           if (id.includes("@tanstack") || id.includes("@trpc") || id.includes("superjson")) return "api";
           if (id.includes("@radix-ui")) return "ui";
           if (id.includes("react-dom") || id.includes("react")) return "react";
-          return "vendor";
+          return undefined;
         },
       },
     },
