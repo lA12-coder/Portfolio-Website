@@ -2,18 +2,21 @@
   "buildCommand": "pnpm run build",
   "outputDirectory": "dist/public",
   "installCommand": "pnpm install --frozen-lockfile",
-  "rewrites": [
+  "routes": [
     {
-      "source": "/robots.txt",
-      "destination": "/api"
+      "handle": "filesystem"
     },
     {
-      "source": "/sitemap.xml",
-      "destination": "/api"
+      "src": "/robots.txt",
+      "dest": "/api"
     },
     {
-      "source": "/:path*",
-      "destination": "/index.html"
+      "src": "/sitemap.xml",
+      "dest": "/api"
+    },
+    {
+      "src": "/.*",
+      "dest": "/index.html"
     }
   ]
 }

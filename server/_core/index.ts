@@ -18,6 +18,10 @@ setDefaultResultOrder("ipv4first");
 
 export function createApiApp() {
   const app = express();
+  const trpcMiddleware = createExpressMiddleware({
+    router: appRouter,
+    createContext,
+  });
 
   registerSecurityHeaders(app);
   registerSeoRoutes(app);
@@ -26,13 +30,8 @@ export function createApiApp() {
   registerStorageProxy(app);
   registerOAuthRoutes(app);
   registerProjectUploads(app);
-  app.use(
-    "/api/trpc",
-    createExpressMiddleware({
-      router: appRouter,
-      createContext,
-    })
-  );
+  app.use("/api/trpc", trpcMiddleware);
+  app.use("/trpc", trpcMiddleware);
 
   return app;
 }
