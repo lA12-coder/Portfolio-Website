@@ -142,7 +142,7 @@ export default function BlogManagementTab() {
       }
 
       setBlogForm((current) => ({ ...current, coverImageUrl: result.url ?? '' }));
-      toast.success('Cover image uploaded');
+      toast.success('Cover image ready. Save the post to store it in the database.');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to upload image');
     } finally {
@@ -195,7 +195,7 @@ export default function BlogManagementTab() {
             <option value={1}>Published</option>
           </select>
           <div className="space-y-3 md:col-span-2">
-            <Input placeholder="Cover image URL" value={blogForm.coverImageUrl} onChange={(event) => setBlogForm({ ...blogForm, coverImageUrl: event.target.value })} className="border-white/10 bg-white/5" />
+            <Input placeholder="Cover image URL or uploaded database image" value={blogForm.coverImageUrl} onChange={(event) => setBlogForm({ ...blogForm, coverImageUrl: event.target.value })} className="border-white/10 bg-white/5" />
             <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-foreground smooth-transition hover:bg-white/10">
               {isUploadingCover ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
               Upload Cover

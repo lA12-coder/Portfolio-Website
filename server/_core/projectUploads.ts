@@ -1,13 +1,7 @@
 import type { Express, Request, Response } from "express";
 import express from "express";
-import fs from "fs";
-import { nanoid } from "nanoid";
-import path from "path";
 import { sdk } from "./sdk";
 
-const uploadRoot = path.resolve(import.meta.dirname, "../..", "uploads");
-const projectUploadDir = path.join(uploadRoot, "projects");
-const certificateUploadDir = path.join(uploadRoot, "certificates");
 const maxImageBytes = 5 * 1024 * 1024;
 
 const allowedMimeTypes: Record<string, string> = {
@@ -32,7 +26,8 @@ function parseDataUrl(dataUrl: string) {
   }
 
   const [, mimeType, base64] = match;
-  const extension = allowedMimeTypes[mimeType.toLowerCase()];
+  const normalizedMimeType = mimeType.toLowerCase();
+  const extension = allowedMimeTypes[normalizedMimeType];
 
   if (!extension) {
     throw new Error("Unsupported image type.");
@@ -48,14 +43,15 @@ function parseDataUrl(dataUrl: string) {
     throw new Error("Image must be 5MB or smaller.");
   }
 
-  return { buffer, extension };
+  return {
+    dataUrl: `data:${normalizedMimeType};base64,${base64.replace(/\s/g, "")}`,
+    extension,
+    size: buffer.length,
+  };
 }
 
 export function registerProjectUploads(app: Express) {
-  fs.mkdirSync(projectUploadDir, { recursive: true });
-  fs.mkdirSync(certificateUploadDir, { recursive: true });
-
-  app.use("/uploads", express.static(uploadRoot));
+  app.use("/uploads", express.static("uploads"));
 
   app.post("/api/admin/project-image", async (req: Request, res: Response) => {
     try {
@@ -73,19 +69,13 @@ export function registerProjectUploads(app: Express) {
         return;
       }
 
-      const { buffer, extension } = parseDataUrl(body.dataUrl);
-      const safeBaseName = (body.fileName || "project-image")
-        .replace(/\.[^.]+$/, "")
-        .replace(/[^a-z0-9-_]+/gi, "-")
-        .replace(/^-+|-+$/g, "")
-        .slice(0, 48) || "project-image";
-      const fileName = `${safeBaseName}-${nanoid(10)}.${extension}`;
-      const filePath = path.join(projectUploadDir, fileName);
-
-      await fs.promises.writeFile(filePath, buffer);
+      const image = parseDataUrl(body.dataUrl);
 
       res.json({
-        url: `/uploads/projects/${fileName}`,
+        url: image.dataUrl,
+        storage: "database",
+        bytes: image.size,
+        extension: image.extension,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Image upload failed.";
@@ -109,19 +99,13 @@ export function registerProjectUploads(app: Express) {
         return;
       }
 
-      const { buffer, extension } = parseDataUrl(body.dataUrl);
-      const safeBaseName = (body.fileName || "certificate-image")
-        .replace(/\.[^.]+$/, "")
-        .replace(/[^a-z0-9-_]+/gi, "-")
-        .replace(/^-+|-+$/g, "")
-        .slice(0, 48) || "certificate-image";
-      const fileName = `${safeBaseName}-${nanoid(10)}.${extension}`;
-      const filePath = path.join(certificateUploadDir, fileName);
-
-      await fs.promises.writeFile(filePath, buffer);
+      const image = parseDataUrl(body.dataUrl);
 
       res.json({
-        url: `/uploads/certificates/${fileName}`,
+        url: image.dataUrl,
+        storage: "database",
+        bytes: image.size,
+        extension: image.extension,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Image upload failed.";

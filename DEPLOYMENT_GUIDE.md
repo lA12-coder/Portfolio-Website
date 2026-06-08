@@ -454,14 +454,9 @@ Also confirm the deployed backend is using the same database where you added con
 
 ### Uploaded Images Do Not Show
 
-Uploaded images live on the backend host under:
+New uploaded project, blog, and certificate images are stored as database-backed `data:image/...` values in the relevant `imageUrl` or `coverImageUrl` fields. After choosing an image in the admin dashboard, save the project, blog post, or certificate so the image data is written to the database.
 
-```txt
-/uploads/projects/...
-/uploads/certificates/...
-```
-
-Confirm the backend service persists the `uploads` directory. If the platform filesystem is ephemeral, use persistent disk storage or move uploads to object storage.
+Older records that still point to `/uploads/...` may fail after redeploys on hosts with ephemeral filesystems. Re-upload and save those images once so they are converted to database-backed image data.
 
 ## Security Notes
 

@@ -79,6 +79,10 @@ const projectImageUrlSchema = z
     (value) => {
       if (value === "") return true;
 
+      if (/^data:image\/(?:avif|gif|jpe?g|png|svg\+xml|webp);base64,[a-z0-9+/=\s]+$/i.test(value)) {
+        return true;
+      }
+
       if (/^\/uploads\/projects\/[a-z0-9][a-z0-9._-]*\.(avif|gif|jpe?g|png|svg|webp)$/i.test(value)) {
         return true;
       }
@@ -131,6 +135,10 @@ const certificateImageUrlSchema = z
   .refine(
     (value) => {
       if (value === "") return true;
+
+      if (/^data:image\/(?:avif|gif|jpe?g|png|svg\+xml|webp);base64,[a-z0-9+/=\s]+$/i.test(value)) {
+        return true;
+      }
 
       if (/^\/uploads\/certificates\/[a-z0-9][a-z0-9._-]*\.(avif|gif|jpe?g|png|svg|webp)$/i.test(value)) {
         return true;

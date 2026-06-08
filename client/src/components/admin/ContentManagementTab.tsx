@@ -309,7 +309,7 @@ export default function ContentManagementTab() {
       }
 
       setProjectForm((current) => ({ ...current, imageUrl: result.url ?? '' }));
-      toast.success('Project image uploaded');
+      toast.success('Project image ready. Save the project to store it in the database.');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to upload image');
     } finally {
@@ -351,7 +351,7 @@ export default function ContentManagementTab() {
       }
 
       setCertificateForm((current) => ({ ...current, imageUrl: result.url ?? '' }));
-      toast.success('Certificate image uploaded');
+      toast.success('Certificate image ready. Save the certificate to store it in the database.');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to upload image');
     } finally {
@@ -476,7 +476,7 @@ export default function ContentManagementTab() {
             <Input placeholder="Live URL" value={projectForm.projectUrl} onChange={(event) => setProjectForm({ ...projectForm, projectUrl: event.target.value })} className="border-white/10 bg-white/5" />
             <Input placeholder="GitHub URL" value={projectForm.githubUrl} onChange={(event) => setProjectForm({ ...projectForm, githubUrl: event.target.value })} className="border-white/10 bg-white/5" />
             <div className="space-y-3">
-              <Input placeholder="Direct image URL (.png, .jpg, .webp)" value={projectForm.imageUrl} onChange={(event) => setProjectForm({ ...projectForm, imageUrl: event.target.value })} className="border-white/10 bg-white/5" />
+              <Input placeholder="Direct image URL or uploaded database image" value={projectForm.imageUrl} onChange={(event) => setProjectForm({ ...projectForm, imageUrl: event.target.value })} className="border-white/10 bg-white/5" />
               <div className="flex flex-wrap items-center gap-3">
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-foreground smooth-transition hover:bg-white/10">
                   {isUploadingProjectImage ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
@@ -492,8 +492,8 @@ export default function ContentManagementTab() {
                     }}
                   />
                 </label>
-                {projectImageUrl.startsWith('/uploads/') && (
-                  <span className="text-xs text-emerald-300">Uploaded image ready</span>
+                {projectImageUrl.startsWith('data:image/') && (
+                  <span className="text-xs text-emerald-300">Database image ready. Save to persist.</span>
                 )}
               </div>
               {projectImageUrl && !imageUrlLooksDirect && (
@@ -783,7 +783,7 @@ export default function ContentManagementTab() {
             <Input placeholder="View certificate URL" value={certificateForm.certificateUrl} onChange={(event) => setCertificateForm({ ...certificateForm, certificateUrl: event.target.value })} className="border-white/10 bg-white/5 md:col-span-2" />
             <Textarea placeholder="Description" value={certificateForm.description} onChange={(event) => setCertificateForm({ ...certificateForm, description: event.target.value })} className="min-h-28 border-white/10 bg-white/5 md:col-span-2" />
             <div className="space-y-3 md:col-span-2">
-              <Input placeholder="Certificate image URL or uploaded image path" value={certificateForm.imageUrl} onChange={(event) => setCertificateForm({ ...certificateForm, imageUrl: event.target.value })} className="border-white/10 bg-white/5" />
+              <Input placeholder="Certificate image URL or uploaded database image" value={certificateForm.imageUrl} onChange={(event) => setCertificateForm({ ...certificateForm, imageUrl: event.target.value })} className="border-white/10 bg-white/5" />
               <div className="flex flex-wrap items-center gap-3">
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-foreground smooth-transition hover:bg-white/10">
                   {isUploadingCertificateImage ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
@@ -799,8 +799,8 @@ export default function ContentManagementTab() {
                     }}
                   />
                 </label>
-                {certificateImageUrl.startsWith('/uploads/certificates/') && (
-                  <span className="text-xs text-emerald-300">Uploaded image ready</span>
+                {certificateImageUrl.startsWith('data:image/') && (
+                  <span className="text-xs text-emerald-300">Database image ready. Save to persist.</span>
                 )}
               </div>
               {certificateImageUrl && !certificateImageUrlLooksDirect && (
