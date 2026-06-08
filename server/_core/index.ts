@@ -30,6 +30,9 @@ export function createApiApp() {
   registerStorageProxy(app);
   registerOAuthRoutes(app);
   registerProjectUploads(app);
+  app.get(["/api/health", "/health"], (_req, res) => {
+    res.json({ ok: true, service: "lidet-portfolio-api" });
+  });
   app.use("/api/trpc", trpcMiddleware);
   app.use("/trpc", trpcMiddleware);
 

@@ -1,22 +1,24 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "pnpm run build",
   "outputDirectory": "dist/public",
   "installCommand": "pnpm install --frozen-lockfile",
-  "routes": [
+  "rewrites": [
     {
-      "handle": "filesystem"
+      "source": "/api/:path*",
+      "destination": "/api/index"
     },
     {
-      "src": "/robots.txt",
-      "dest": "/api"
+      "source": "/robots.txt",
+      "destination": "/api/index"
     },
     {
-      "src": "/sitemap.xml",
-      "dest": "/api"
+      "source": "/sitemap.xml",
+      "destination": "/api/index"
     },
     {
-      "src": "/.*",
-      "dest": "/index.html"
+      "source": "/:path*",
+      "destination": "/index.html"
     }
   ]
 }
