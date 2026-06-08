@@ -71,7 +71,7 @@ Output Directory: dist/public
 Root Directory: ./
 ```
 
-The repository includes [vercel.json](./vercel.json), which keeps Vercel frontend-only and sends all routes to `index.html` for the React SPA.
+The repository includes [vercel.json](./vercel.json), which keeps Vercel frontend-only and sends all non-file routes to `index.html` for the React SPA. This is required for direct visits to client-side routes such as `/admin`, `/blog`, and `/blog/my-post`.
 
 ### Vercel Environment Variables
 
@@ -371,6 +371,13 @@ No API request should go to:
 
 ```txt
 https://your-frontend.vercel.app/api/trpc
+```
+
+Also test direct SPA routes in a fresh tab:
+
+```txt
+https://your-frontend.vercel.app/admin
+https://your-frontend.vercel.app/blog
 ```
 
 Test these flows:
