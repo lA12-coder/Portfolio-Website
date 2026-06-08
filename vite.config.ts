@@ -3,7 +3,7 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import fs from "node:fs";
 import path from "node:path";
-import { defineConfig, loadEnv, type Plugin, type ViteDevServer } from "vite";
+import { defineConfig, loadEnv, type ViteDevServer } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 
 // =============================================================================
@@ -74,11 +74,11 @@ function writeToLogFile(source: LogSource, entries: unknown[]) {
  * - Files: browserConsole.log, networkRequests.log, sessionReplay.log
  * - Auto-trimmed when exceeding 1MB (keeps newest entries)
  */
-function vitePluginManusDebugCollector(): Plugin {
+function vitePluginManusDebugCollector() {
   return {
     name: "manus-debug-collector",
 
-    transformIndexHtml(html) {
+    transformIndexHtml(html: string) {
       if (process.env.NODE_ENV === "production") {
         return html;
       }
@@ -91,7 +91,7 @@ function vitePluginManusDebugCollector(): Plugin {
               src: "/__manus__/debug-collector.js",
               defer: true,
             },
-            injectTo: "head",
+            injectTo: "head" as const,
           },
         ],
       };
@@ -150,10 +150,10 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-function vitePluginAnalyticsScript(): Plugin {
+function vitePluginAnalyticsScript() {
   return {
     name: "portfolio-analytics-script",
-    transformIndexHtml(html) {
+    transformIndexHtml(html: string) {
       const viteEnv = loadEnv(process.env.NODE_ENV === "production" ? "production" : "development", PROJECT_ROOT, "");
       const endpoint = process.env.VITE_ANALYTICS_ENDPOINT || viteEnv.VITE_ANALYTICS_ENDPOINT;
       const websiteId = process.env.VITE_ANALYTICS_WEBSITE_ID || viteEnv.VITE_ANALYTICS_WEBSITE_ID;
@@ -201,7 +201,7 @@ export default defineConfig({
     cssCodeSplit: true,
     rollupOptions: {
       output: {
-        manualChunks(id) {
+        manualChunks(id: string) {
           if (!id.includes("node_modules")) return undefined;
           if (id.includes("@react-three") || id.includes("/three/")) return "three";
           if (id.includes("@tanstack") || id.includes("@trpc") || id.includes("superjson")) return "api";
