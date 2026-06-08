@@ -46,6 +46,8 @@ import {
   getRagKnowledgeBase,
   createRagChunk,
   deleteRagChunk,
+  getLatestResumeAsset,
+  createResumeAsset,
   createChatLog,
   createResumeAnalyzerLog,
 } from "./db";
@@ -171,6 +173,34 @@ const blogPostInputSchema = z.object({
   order: z.number().int().min(0).max(999).default(0),
 });
 
+const maxResumePdfBytes = 8 * 1024 * 1024;
+const resumePdfUrl = "/api/resume/pdf";
+
+const resumePdfDataUrlSchema = z.string().refine(
+  (value) => /^data:application\/pdf;base64,[a-z0-9+/=\s]+$/i.test(value),
+  { message: "Upload a valid PDF file." }
+);
+
+function resumeResponse(asset: Awaited<ReturnType<typeof getLatestResumeAsset>>) {
+  if (!asset) {
+    return {
+      source: "fallback" as const,
+      fileName: "lidet-admassu-resume.pdf",
+      url: resumePdfUrl,
+      byteSize: null,
+      updatedAt: null,
+    };
+  }
+
+  return {
+    source: "admin" as const,
+    fileName: asset.fileName,
+    url: resumePdfUrl,
+    byteSize: asset.byteSize,
+    updatedAt: asset.createdAt.toISOString(),
+  };
+}
+
 function projectValues(input: z.infer<typeof projectInputSchema>) {
   return {
     ...input,
@@ -251,6 +281,9 @@ export const appRouter = router({
       }),
     getTestimonials: publicProcedure.query(async () => {
       return getApprovedTestimonials();
+    }),
+    getResume: publicProcedure.query(async () => {
+      return resumeResponse(await getLatestResumeAsset());
     }),
   }),
   newsletter: router({
@@ -712,6 +745,35 @@ export const appRouter = router({
     getRagKnowledgeBase: adminProcedure.query(async () => {
       return getRagKnowledgeBase();
     }),
+    getResume: adminProcedure.query(async () => {
+      return resumeResponse(await getLatestResumeAsset());
+    }),
+    uploadResumePdf: adminProcedure
+      .input(z.object({
+        fileName: z.string().min(1).max(255),
+        dataUrl: resumePdfDataUrlSchema,
+      }))
+      .mutation(async ({ input }) => {
+        const [, base64] = input.dataUrl.split(",");
+        const normalizedBase64 = base64.replace(/\s/g, "");
+        const byteSize = Buffer.from(normalizedBase64, "base64").length;
+
+        if (byteSize === 0) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Resume PDF is empty." });
+        }
+
+        if (byteSize > maxResumePdfBytes) {
+          throw new TRPCError({ code: "PAYLOAD_TOO_LARGE", message: "Resume PDF must be 8MB or smaller." });
+        }
+
+        const asset = await createResumeAsset({
+          fileName: input.fileName,
+          dataUrl: `data:application/pdf;base64,${normalizedBase64}`,
+          byteSize,
+        });
+
+        return resumeResponse(asset);
+      }),
     uploadRagContent: adminProcedure
       .input(z.object({
         content: z.string().min(20),

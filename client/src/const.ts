@@ -2,6 +2,9 @@ export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
 import { apiUrl } from "@/lib/api";
 
+export const RESUME_PDF_URL = "/documents/lidet-admassu-resume.pdf";
+export const RESUME_PAGE_URL = "/vc";
+
 // Generate Google login URL at runtime so redirect URI reflects the current origin.
 export const getLoginUrl = () => {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;

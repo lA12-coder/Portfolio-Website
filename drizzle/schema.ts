@@ -159,6 +159,17 @@ export const ragKnowledgeBase = pgTable("ragKnowledgeBase", {
 export type RagKnowledgeBase = typeof ragKnowledgeBase.$inferSelect;
 export type InsertRagKnowledgeBase = typeof ragKnowledgeBase.$inferInsert;
 
+export const resumeAssets = pgTable("resumeAssets", {
+  id: serial("id").primaryKey(),
+  fileName: varchar("fileName", { length: 255 }).notNull(),
+  dataUrl: text("dataUrl").notNull(),
+  byteSize: integer("byteSize").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ResumeAsset = typeof resumeAssets.$inferSelect;
+export type InsertResumeAsset = typeof resumeAssets.$inferInsert;
+
 export const chatLogs = pgTable("chatLogs", {
   id: serial("id").primaryKey(),
   visitorId: varchar("visitorId", { length: 255 }).notNull(),

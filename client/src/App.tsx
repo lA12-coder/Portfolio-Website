@@ -12,6 +12,7 @@ const Home = lazy(() => import("./pages/Home"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const BlogListPage = lazy(() => import("@/pages/BlogListPage"));
 const BlogPostPage = lazy(() => import("@/pages/BlogPostPage"));
+const ResumePage = lazy(() => import("@/pages/ResumePage"));
 
 function RouteLoader() {
   return (
@@ -29,6 +30,7 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/blog"} component={BlogListPage} />
       <Route path={"/blog/:slug"} component={BlogPostPage} />
+      <Route path={"/vc"} component={ResumePage} />
       <Route path={"/admin"} component={AdminDashboard} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

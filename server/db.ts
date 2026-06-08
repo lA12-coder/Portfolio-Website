@@ -13,6 +13,7 @@ import {
   testimonials,
   contactSubmissions,
   ragKnowledgeBase,
+  resumeAssets,
   chatLogs,
   resumeAnalyzerLogs,
   InsertProject,
@@ -24,6 +25,7 @@ import {
   InsertTestimonial,
   InsertContactSubmission,
   InsertRagKnowledgeBase,
+  InsertResumeAsset,
   InsertChatLog,
   InsertResumeAnalyzerLog,
 } from "../drizzle/schema";
@@ -380,6 +382,25 @@ export async function deleteRagChunk(chunkId: string) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(ragKnowledgeBase).where(eq(ragKnowledgeBase.chunkId, chunkId));
+}
+
+export async function getLatestResumeAsset() {
+  const db = await getDb();
+  if (!db) return undefined;
+  try {
+    const result = await db.select().from(resumeAssets).orderBy(desc(resumeAssets.createdAt)).limit(1);
+    return result[0];
+  } catch (error) {
+    console.warn("[Database] Cannot get resume asset:", error);
+    return undefined;
+  }
+}
+
+export async function createResumeAsset(data: InsertResumeAsset) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(resumeAssets).values(data).returning();
+  return result[0];
 }
 
 export async function createChatLog(data: InsertChatLog) {

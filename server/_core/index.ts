@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerProjectUploads } from "./projectUploads";
+import { registerResumeRoutes } from "./resumeRoutes";
 import { registerSecurityHeaders } from "./security";
 import { registerSeoRoutes } from "./seo";
 import { registerStorageProxy } from "./storageProxy";
@@ -30,6 +31,7 @@ export function createApiApp() {
   registerStorageProxy(app);
   registerOAuthRoutes(app);
   registerProjectUploads(app);
+  registerResumeRoutes(app);
   app.get(["/api/health", "/health"], (_req, res) => {
     res.json({ ok: true, service: "lidet-portfolio-api" });
   });

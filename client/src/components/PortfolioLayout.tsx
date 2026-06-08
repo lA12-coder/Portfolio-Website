@@ -53,12 +53,16 @@ export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
     { href: '#about', label: 'About' },
     { href: '#portfolio', label: 'Portfolio' },
     { href: '#experience', label: 'Experience' },
+    { href: '/vc', label: 'CV' },
     { href: '#blog', label: 'Blog' },
     { href: '#interactive', label: 'Lab' },
     { href: '#testimonials', label: 'Feedback' },
     { href: '#contact', label: 'Contact' },
   ];
-  const getNavHref = (href: string) => (window.location.pathname === '/' ? href : `/${href}`);
+  const getNavHref = (href: string) => {
+    if (!href.startsWith('#')) return href;
+    return window.location.pathname === '/' ? href : `/${href}`;
+  };
 
   useEffect(() => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -303,12 +307,12 @@ export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
                   key={item.href}
                   href={getNavHref(item.href)}
                   className={`block text-sm font-medium smooth-transition ${
-                    activeSection === item.href.slice(1)
+                    item.href.startsWith('#') && activeSection === item.href.slice(1)
                       ? 'translate-x-1 text-foreground'
                       : 'text-foreground/65 hover:text-foreground dark:text-muted-foreground'
                   }`}
                   style={
-                    activeSection === item.href.slice(1)
+                    item.href.startsWith('#') && activeSection === item.href.slice(1)
                       ? { textShadow: `0 0 18px ${modeMeta[visualMode].color}55` }
                       : undefined
                   }
