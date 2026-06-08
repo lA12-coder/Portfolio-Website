@@ -66,7 +66,7 @@ async function startServer() {
   if (process.env.NODE_ENV === "development") {
     const { setupVite } = await import("./vite");
     await setupVite(app, server);
-  } else {
+  } else if (process.env.SERVE_STATIC_FRONTEND !== "false") {
     const { serveStatic } = await import("./vite");
     serveStatic(app);
   }

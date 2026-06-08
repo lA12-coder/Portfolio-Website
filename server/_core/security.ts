@@ -16,6 +16,32 @@ export function registerSecurityHeaders(app: Express) {
   app.set("trust proxy", 1);
 
   app.use((req: Request, res: Response, next: NextFunction) => {
+    const configuredOrigins = [
+      ENV.frontendUrl,
+      ...ENV.corsOrigins.split(","),
+    ]
+      .map(origin => origin.trim().replace(/\/$/, ""))
+      .filter(Boolean);
+    const requestOrigin = req.headers.origin;
+
+    if (requestOrigin && configuredOrigins.includes(requestOrigin.replace(/\/$/, ""))) {
+      res.setHeader("Access-Control-Allow-Origin", requestOrigin);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+      res.setHeader("Vary", "Origin");
+    }
+
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+
+    if (req.method === "OPTIONS") {
+      res.status(204).end();
+      return;
+    }
+
+    next();
+  });
+
+  app.use((req: Request, res: Response, next: NextFunction) => {
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("X-Frame-Options", "DENY");
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");

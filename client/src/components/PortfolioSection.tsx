@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { assetUrl } from '@/lib/api';
 import { trpc } from '@/lib/trpc';
 import { ExternalLink, Github } from 'lucide-react';
 
@@ -93,7 +94,7 @@ function ProjectPreview({
       {showImage ? (
         <>
           <img
-            src={imageUrl ?? undefined}
+            src={assetUrl(imageUrl)}
             alt={`${title} preview`}
             className="absolute inset-0 h-full w-full object-cover smooth-transition group-hover:scale-105"
             loading="lazy"

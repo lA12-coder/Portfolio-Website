@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, CalendarDays, ExternalLink } from 'lucide-react';
 import PortfolioLayout from '@/components/PortfolioLayout';
+import { assetUrl } from '@/lib/api';
 import { trpc } from '@/lib/trpc';
 
 function parseTags(value: string | string[] | null) {
@@ -54,7 +55,7 @@ export default function BlogListPage() {
                 <article key={post.id} className="flex h-full flex-col overflow-hidden rounded-lg border border-white/10 bg-white/5">
                   {post.coverImageUrl && (
                     <a href={`/blog/${post.slug}`} className="block aspect-[16/9] overflow-hidden border-b border-white/10 bg-white/5">
-                      <img src={post.coverImageUrl} alt="" className="h-full w-full object-cover smooth-transition hover:scale-[1.03]" loading="lazy" />
+                      <img src={assetUrl(post.coverImageUrl)} alt="" className="h-full w-full object-cover smooth-transition hover:scale-[1.03]" loading="lazy" />
                     </a>
                   )}
                   <div className="flex flex-1 flex-col p-5">

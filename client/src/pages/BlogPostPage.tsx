@@ -3,6 +3,7 @@ import { Streamdown } from 'streamdown';
 import { ArrowLeft, CalendarDays } from 'lucide-react';
 import { useRoute } from 'wouter';
 import PortfolioLayout from '@/components/PortfolioLayout';
+import { assetUrl } from '@/lib/api';
 import { trpc } from '@/lib/trpc';
 
 function parseTags(value: string | string[] | null) {
@@ -74,7 +75,7 @@ export default function BlogPostPage() {
 
             {post.coverImageUrl && (
               <div className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
-                <img src={post.coverImageUrl} alt="" className="w-full object-cover" />
+                <img src={assetUrl(post.coverImageUrl)} alt="" className="w-full object-cover" />
               </div>
             )}
 

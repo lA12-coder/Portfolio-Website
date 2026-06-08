@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { apiUrl, assetUrl } from '@/lib/api';
 import { Edit3, ExternalLink, Loader2, Plus, Save, Trash2, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -290,7 +291,7 @@ export default function ContentManagementTab() {
     try {
       setIsUploadingProjectImage(true);
       const dataUrl = await readFileAsDataUrl(file);
-      const response = await fetch('/api/admin/project-image', {
+      const response = await fetch(apiUrl('/api/admin/project-image'), {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -332,7 +333,7 @@ export default function ContentManagementTab() {
     try {
       setIsUploadingCertificateImage(true);
       const dataUrl = await readFileAsDataUrl(file);
-      const response = await fetch('/api/admin/certificate-image', {
+      const response = await fetch(apiUrl('/api/admin/certificate-image'), {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -512,7 +513,7 @@ export default function ContentManagementTab() {
                 <div className="relative h-40 overflow-hidden rounded-lg border border-white/10 bg-white/5">
                   {!imagePreviewFailed ? (
                     <img
-                      src={projectImageUrl}
+                      src={assetUrl(projectImageUrl)}
                       alt="Project image preview"
                       className="h-full w-full object-cover"
                       onError={() => setImagePreviewFailed(true)}
@@ -818,7 +819,7 @@ export default function ContentManagementTab() {
                 <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5">
                   {!certificateImagePreviewFailed ? (
                     <img
-                      src={certificateImageUrl}
+                      src={assetUrl(certificateImageUrl)}
                       alt="Certificate image preview"
                       className="h-full w-full object-cover"
                       onError={() => setCertificateImagePreviewFailed(true)}
@@ -844,7 +845,7 @@ export default function ContentManagementTab() {
                   <div className="flex gap-4">
                     <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5">
                       {certificate.imageUrl ? (
-                        <img src={certificate.imageUrl} alt="" className="h-full w-full object-cover" />
+                        <img src={assetUrl(certificate.imageUrl)} alt="" className="h-full w-full object-cover" />
                       ) : (
                         <span className="text-sm font-semibold text-accent">{certificate.title.slice(0, 2).toUpperCase()}</span>
                       )}

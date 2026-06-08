@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ExternalLink } from 'lucide-react';
+import { assetUrl } from '@/lib/api';
 import { trpc } from '@/lib/trpc';
 
 const skillCategories = [
@@ -317,7 +318,7 @@ export default function AboutSection() {
                 <div className="mb-5 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-background">
                   {certificate.imageUrl ? (
                     <img
-                      src={certificate.imageUrl}
+                      src={assetUrl(certificate.imageUrl)}
                       alt={`${certificate.title} logo`}
                       className="h-full w-full object-cover"
                       loading="lazy"

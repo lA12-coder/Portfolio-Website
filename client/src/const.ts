@@ -1,9 +1,11 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
+import { apiUrl } from "@/lib/api";
+
 // Generate Google login URL at runtime so redirect URI reflects the current origin.
 export const getLoginUrl = () => {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-  const redirectUri = `${window.location.origin}/api/oauth/callback`;
+  const redirectUri = apiUrl("/api/oauth/callback");
   const state = btoa(redirectUri);
 
   const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");

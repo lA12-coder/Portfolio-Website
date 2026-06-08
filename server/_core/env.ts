@@ -23,4 +23,6 @@ export const ENV = {
   emailFrom: process.env.EMAIL_FROM ?? "",
   contactEmailTo: process.env.CONTACT_EMAIL_TO ?? process.env.OWNER_EMAIL ?? "",
   siteUrl: process.env.PUBLIC_SITE_URL ?? process.env.VITE_SITE_URL ?? "",
+  frontendUrl: process.env.FRONTEND_URL ?? process.env.PUBLIC_SITE_URL ?? process.env.VITE_SITE_URL ?? "",
+  corsOrigins: process.env.CORS_ORIGINS ?? process.env.CORS_ORIGIN ?? "",
 };

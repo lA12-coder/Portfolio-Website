@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { trpc } from '@/lib/trpc';
+import { apiUrl, assetUrl } from '@/lib/api';
 import { Edit3, Loader2, Plus, Save, Trash2, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -123,7 +124,7 @@ export default function BlogManagementTab() {
     try {
       setIsUploadingCover(true);
       const dataUrl = await readFileAsDataUrl(file);
-      const response = await fetch('/api/admin/project-image', {
+      const response = await fetch(apiUrl('/api/admin/project-image'), {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -213,7 +214,7 @@ export default function BlogManagementTab() {
           {blogForm.coverImageUrl && (
             <div className="md:col-span-2">
               <div className="aspect-[16/7] overflow-hidden rounded-lg border border-white/10 bg-white/5">
-                <img src={blogForm.coverImageUrl} alt="Blog cover preview" className="h-full w-full object-cover" />
+                <img src={assetUrl(blogForm.coverImageUrl)} alt="Blog cover preview" className="h-full w-full object-cover" />
               </div>
             </div>
           )}
