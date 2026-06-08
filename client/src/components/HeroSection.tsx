@@ -9,9 +9,10 @@ interface HeroSectionProps {
 
 export default function HeroSection({ onViewWork, onContact }: HeroSectionProps) {
   return (
-    <section className="relative min-h-screen flex flex-col justify-center px-6 md:px-12 py-20 md:py-0">
+    <section className="relative isolate flex min-h-[calc(100svh-5rem)] flex-col justify-center overflow-hidden px-6 py-20 md:min-h-screen md:px-12 md:py-0">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-background/45 via-background/72 to-background lg:hidden" />
       {/* Mobile Header */}
-      <div className="lg:hidden mb-12">
+      <div className="relative z-10 mb-12 lg:hidden">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
           <span className="text-gradient">Lidet Admassu</span>
         </h1>
@@ -21,7 +22,7 @@ export default function HeroSection({ onViewWork, onContact }: HeroSectionProps)
       </div>
 
       {/* Hero Content */}
-      <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.72fr)]">
+      <div className="relative z-10 grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.72fr)]">
         <div className="max-w-2xl space-y-8">
           <div className="space-y-6">
             <h2 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight">
@@ -72,7 +73,7 @@ export default function HeroSection({ onViewWork, onContact }: HeroSectionProps)
           </div>
         </div>
 
-        <div className="relative mx-auto w-full max-w-[26rem] lg:mx-0 lg:justify-self-end">
+        <div className="relative mx-auto w-full max-w-[22rem] sm:max-w-[26rem] lg:mx-0 lg:justify-self-end">
           <div className="relative overflow-hidden rounded-lg border border-white/10 bg-white/5 shadow-2xl shadow-black/20">
             <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-accent/20 to-transparent" aria-hidden="true" />
             <div className="relative aspect-[4/5] overflow-hidden bg-[radial-gradient(circle_at_50%_18%,rgba(251,191,36,0.18),rgba(255,255,255,0.04)_42%,rgba(255,255,255,0.02)_100%)]">
@@ -104,7 +105,7 @@ export default function HeroSection({ onViewWork, onContact }: HeroSectionProps)
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 lg:hidden">
+      <div className="pointer-events-none absolute bottom-8 left-1/2 z-10 -translate-x-1/2 lg:hidden">
         <div className="flex flex-col items-center gap-2 animate-bounce">
           <span className="text-xs text-muted-foreground">Scroll to explore</span>
           <div className="w-6 h-10 border border-white/20 rounded-full flex items-start justify-center p-2">

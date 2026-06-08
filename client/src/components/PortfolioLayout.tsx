@@ -62,8 +62,7 @@ export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
 
   useEffect(() => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
-    setWebglEnabled(!reduceMotion && !coarsePointer);
+    setWebglEnabled(!reduceMotion);
 
     const handleWeatherChange = (event: Event) => {
       const detail = (event as CustomEvent<{ mood?: WeatherMood; condition?: string; isNight?: boolean }>).detail;
@@ -164,7 +163,7 @@ export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-hidden">
+    <div className="min-h-screen overflow-x-hidden bg-background text-foreground lg:overflow-hidden">
       <a
         href="#about"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-foreground"
@@ -254,7 +253,21 @@ export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
         </div>
       </header>
 
-      <div className="relative z-0 flex h-screen overflow-hidden">
+      <div className="relative z-0 flex min-h-screen overflow-visible lg:h-screen lg:overflow-hidden">
+        {webglEnabled && (
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[100svh] overflow-hidden lg:hidden">
+            <Suspense fallback={null}>
+              <ThreeMesh
+                weatherMood={weatherMood}
+                visualMode="origin"
+                accentColor={modeMeta.origin.color}
+              />
+            </Suspense>
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_20%,transparent_0%,rgba(255,255,255,0.78)_46%,rgba(255,255,255,0.98)_82%)] dark:bg-[radial-gradient(circle_at_72%_20%,transparent_0%,rgba(8,10,20,0.48)_42%,rgba(8,10,20,0.94)_82%)]" />
+            <div className="pointer-events-none absolute inset-0 bg-background/20 dark:bg-background/15" />
+          </div>
+        )}
+
         {/* Left Column - Fixed Sidebar */}
         <aside className="relative hidden lg:flex lg:w-1/2 lg:flex-col lg:justify-between lg:sticky lg:top-0 lg:h-screen lg:overflow-hidden lg:bg-gradient-to-b lg:from-background lg:to-background/80 lg:border-r lg:border-border/50 lg:p-12">
           {webglEnabled && (
@@ -368,7 +381,7 @@ export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
 
         {/* Right Column - Scrollable Content */}
         <main
-          className="w-full scroll-smooth pt-20 lg:w-1/2 lg:overflow-y-auto lg:pt-0"
+          className="relative z-10 w-full scroll-smooth pt-20 lg:w-1/2 lg:overflow-y-auto lg:pt-0"
           onScroll={handleContentScroll}
         >
           {children}
