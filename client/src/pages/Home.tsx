@@ -8,8 +8,9 @@ import TestimonialsSection from '@/components/TestimonialsSection';
 import ContactSection from '@/components/ContactSection';
 
 const InteractiveFeaturesSection = lazy(() => import('@/components/InteractiveFeaturesSection'));
+const PortfolioSection = lazy(() => import('@/components/PortfolioSection'));
 
-type PortfolioPage = 'home' | 'about' | 'experience' | 'contact';
+type PortfolioPage = 'home' | 'about' | 'projects' | 'experience' | 'contact';
 
 const labFallback = (
   <div className="mx-6 h-80 max-w-4xl animate-pulse rounded-lg border border-white/10 bg-white/5 md:mx-12" />
@@ -18,6 +19,7 @@ const labFallback = (
 const footerNavItems = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
+  { href: '/projects', label: 'Projects' },
   { href: '/experience', label: 'Experience' },
   { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
@@ -68,7 +70,7 @@ export default function Home({ page = 'home' }: { page?: PortfolioPage }) {
   const [, setLocation] = useLocation();
 
   const handleViewWork = () => {
-    setLocation('/experience');
+    setLocation('/projects');
   };
 
   const handleContact = () => {
@@ -86,6 +88,11 @@ export default function Home({ page = 'home' }: { page?: PortfolioPage }) {
       </>
     ),
     about: <AboutSection variant="about" />,
+    projects: (
+      <Suspense fallback={labFallback}>
+        <PortfolioSection />
+      </Suspense>
+    ),
     experience: (
       <>
         <AboutSection variant="experience" />

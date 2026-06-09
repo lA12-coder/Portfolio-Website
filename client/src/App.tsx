@@ -28,6 +28,7 @@ function Router() {
     <Switch>
       <Route path={"/"}>{() => <Home page="home" />}</Route>
       <Route path={"/about"}>{() => <Home page="about" />}</Route>
+      <Route path={"/projects"}>{() => <Home page="projects" />}</Route>
       <Route path={"/experience"}>{() => <Home page="experience" />}</Route>
       <Route path={"/contact"}>{() => <Home page="contact" />}</Route>
       <Route path={"/blog"} component={BlogListPage} />

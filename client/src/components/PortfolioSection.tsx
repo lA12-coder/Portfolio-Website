@@ -192,11 +192,11 @@ export default function PortfolioSection() {
     : projects.filter((p) => p.category === selectedCategory);
 
   return (
-    <section id="portfolio" className="px-6 md:px-12 py-20 md:py-32 max-w-2xl">
+    <section id="projects" className="px-6 md:px-12 py-20 md:py-32 max-w-4xl">
       <div className="space-y-16">
         {/* Section Header */}
         <div>
-          <h2 className="text-4xl font-bold tracking-tight mb-4">Portfolio</h2>
+          <h2 className="text-4xl font-bold tracking-tight mb-4">Projects</h2>
           <div className="w-12 h-1 bg-gradient-to-r from-accent to-transparent rounded-full" />
           <p className="text-muted-foreground mt-4">
             A selection of my recent projects showcasing my skills and expertise.

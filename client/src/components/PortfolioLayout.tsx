@@ -30,6 +30,7 @@ const modeMeta: Record<VisualMode, { label: string; color: string }> = {
 const sectionModes: Record<string, VisualMode> = {
   home: 'origin',
   about: 'craft',
+  projects: 'systems',
   experience: 'ai',
   resume: 'ai',
   contact: 'contact',
@@ -52,6 +53,7 @@ export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
   const navItems = [
     { href: '/', label: 'Home', id: 'home' },
     { href: '/about', label: 'About', id: 'about' },
+    { href: '/projects', label: 'Projects', id: 'projects' },
     { href: '/experience', label: 'Experience', id: 'experience' },
     { href: '/blog', label: 'Blog', id: 'blog' },
     { href: '/contact', label: 'Contact', id: 'contact' },
