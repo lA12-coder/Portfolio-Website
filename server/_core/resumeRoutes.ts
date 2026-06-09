@@ -15,23 +15,24 @@ function fallbackResumePath() {
   return candidates.find((candidate) => fs.existsSync(candidate));
 }
 
-function sendPdfBuffer(res: Response, buffer: Buffer, fileName: string) {
+function sendPdfBuffer(res: Response, buffer: Buffer, fileName: string, disposition: "inline" | "attachment") {
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Length", String(buffer.length));
-  res.setHeader("Content-Disposition", `inline; filename="${fileName.replace(/"/g, "")}"`);
-  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Content-Disposition", `${disposition}; filename="${fileName.replace(/"/g, "")}"`);
+  res.setHeader("Cache-Control", "public, max-age=300");
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.end(buffer);
 }
 
 export function registerResumeRoutes(app: Express) {
-  app.get("/api/resume/pdf", async (_req: Request, res: Response) => {
+  app.get("/api/resume/pdf", async (req: Request, res: Response) => {
     try {
+      const disposition = req.query.download === "1" ? "attachment" : "inline";
       const asset = await getLatestResumeAsset();
 
       if (asset) {
         const [, base64] = asset.dataUrl.split(",");
-        sendPdfBuffer(res, Buffer.from(base64, "base64"), asset.fileName);
+        sendPdfBuffer(res, Buffer.from(base64, "base64"), asset.fileName, disposition);
         return;
       }
 
@@ -42,7 +43,7 @@ export function registerResumeRoutes(app: Express) {
         return;
       }
 
-      sendPdfBuffer(res, await fs.promises.readFile(fallbackPath), fallbackResumeFileName);
+      sendPdfBuffer(res, await fs.promises.readFile(fallbackPath), fallbackResumeFileName, disposition);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Resume PDF failed to load.";
       res.status(500).json({ error: message });

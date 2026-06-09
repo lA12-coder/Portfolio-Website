@@ -1,5 +1,6 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { Github, Linkedin, Mail, Menu, Send} from 'lucide-react';
+import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from '@/components/ThemeToggle';
 import type { VisualMode, WeatherMood } from '@/components/ThreeMesh';
@@ -27,16 +28,15 @@ const modeMeta: Record<VisualMode, { label: string; color: string }> = {
 };
 
 const sectionModes: Record<string, VisualMode> = {
+  home: 'origin',
   about: 'craft',
-  portfolio: 'systems',
   experience: 'ai',
-  blog: 'systems',
-  interactive: 'ai',
-  testimonials: 'origin',
+  resume: 'ai',
   contact: 'contact',
 };
 
 export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
+  const [location] = useLocation();
   const spotlightRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<number | null>(null);
   const scrollFrameRef = useRef<number | null>(null);
@@ -44,49 +44,28 @@ export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
   const lastScrollRef = useRef({ top: 0, time: performance.now() });
   const [webglEnabled, setWebglEnabled] = useState(false);
   const [visualMode, setVisualMode] = useState<VisualMode>('origin');
-  const [activeSection, setActiveSection] = useState('about');
-  const [weatherMood, setWeatherMood] = useState<WeatherMood>(() => {
+  const [activeSection, setActiveSection] = useState('home');
+  const [weatherMood] = useState<WeatherMood>(() => {
     const hour = new Date().getHours();
     return hour < 6 || hour >= 19 ? 'night' : 'sunny';
   });
   const navItems = [
-    { href: '#about', label: 'About' },
-    { href: '#portfolio', label: 'Portfolio' },
-    { href: '#experience', label: 'Experience' },
-    { href: '/vc', label: 'CV' },
-    { href: '#blog', label: 'Blog' },
-    { href: '#interactive', label: 'Lab' },
-    { href: '#testimonials', label: 'Feedback' },
-    { href: '#contact', label: 'Contact' },
+    { href: '/', label: 'Home', id: 'home' },
+    { href: '/about', label: 'About', id: 'about' },
+    { href: '/experience', label: 'Experience', id: 'experience' },
+    { href: '/blog', label: 'Blog', id: 'blog' },
+    { href: '/contact', label: 'Contact', id: 'contact' },
   ];
-  const getNavHref = (href: string) => {
-    if (!href.startsWith('#')) return href;
-    return window.location.pathname === '/' ? href : `/${href}`;
-  };
+
+  useEffect(() => {
+    const routeSection = location === '/' ? 'home' : location.replace(/^\//, '').split('/')[0] || 'home';
+    setActiveSection(routeSection);
+    setVisualMode(sectionModes[routeSection] ?? 'origin');
+  }, [location]);
 
   useEffect(() => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     setWebglEnabled(!reduceMotion);
-
-    const handleWeatherChange = (event: Event) => {
-      const detail = (event as CustomEvent<{ mood?: WeatherMood; condition?: string; isNight?: boolean }>).detail;
-      const condition = detail?.condition?.toLowerCase() ?? '';
-
-      if (detail?.mood) {
-        setWeatherMood(detail.mood);
-      } else if (detail?.isNight) {
-        setWeatherMood('night');
-      } else if (condition.includes('rain') || condition.includes('storm')) {
-        setWeatherMood('rainy');
-      } else if (condition.includes('cloud') || condition.includes('mist') || condition.includes('fog')) {
-        setWeatherMood('cloudy');
-      } else {
-        setWeatherMood('sunny');
-      }
-    };
-
-    window.addEventListener('portfolio-weather-change', handleWeatherChange as EventListener);
-    return () => window.removeEventListener('portfolio-weather-change', handleWeatherChange as EventListener);
   }, []);
 
   useEffect(() => {
@@ -169,7 +148,7 @@ export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground lg:overflow-hidden">
       <a
-        href="#about"
+        href="/about"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-foreground"
       >
         Skip to content
@@ -188,7 +167,7 @@ export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
 
       <header className="fixed inset-x-0 top-0 z-40 border-b border-white/10 bg-background/90 px-4 py-3 backdrop-blur-lg lg:hidden">
         <div className="flex items-center justify-between gap-4">
-          <a href="#" className="min-w-0">
+          <a href="/" className="min-w-0">
             <span className="block truncate text-lg font-bold text-gradient">Lidet Admassu</span>
             <span className="block truncate text-xs text-muted-foreground">Software Engineer & AI Specialist</span>
           </a>
@@ -214,7 +193,7 @@ export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
                 {navItems.map((item) => (
                   <SheetClose asChild key={item.href}>
                     <a
-                      href={getNavHref(item.href)}
+                      href={item.href}
                       className="rounded-lg px-3 py-3 text-sm font-medium text-muted-foreground hover:bg-white/5 hover:text-foreground smooth-transition"
                     >
                       {item.label}
@@ -305,14 +284,14 @@ export default function PortfolioLayout({ children }: PortfolioLayoutProps) {
               {navItems.map((item) => (
                 <a
                   key={item.href}
-                  href={getNavHref(item.href)}
+                  href={item.href}
                   className={`block text-sm font-medium smooth-transition ${
-                    item.href.startsWith('#') && activeSection === item.href.slice(1)
+                    item.id && activeSection === item.id
                       ? 'translate-x-1 text-foreground'
                       : 'text-foreground/65 hover:text-foreground dark:text-muted-foreground'
                   }`}
                   style={
-                    item.href.startsWith('#') && activeSection === item.href.slice(1)
+                    item.id && activeSection === item.id
                       ? { textShadow: `0 0 18px ${modeMeta[visualMode].color}55` }
                       : undefined
                   }

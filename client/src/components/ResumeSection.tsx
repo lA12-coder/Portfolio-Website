@@ -1,16 +1,17 @@
 import React from 'react';
 import { Download, ExternalLink } from 'lucide-react';
-import { RESUME_PAGE_URL, RESUME_PDF_URL } from '@/const';
+import { RESUME_PDF_URL } from '@/const';
 import { assetUrl } from '@/lib/api';
 import { trpc } from '@/lib/trpc';
 
 export default function ResumeSection() {
   const resumeQuery = trpc.portfolio.getResume.useQuery();
   const resumeUrl = assetUrl(resumeQuery.data?.url ?? RESUME_PDF_URL);
+  const downloadUrl = resumeUrl.includes('/api/resume/pdf') ? `${resumeUrl}?download=1` : resumeUrl;
   const resumeFileName = resumeQuery.data?.fileName ?? 'lidet-admassu-resume.pdf';
 
   return (
-    <section id="experience" className="px-6 md:px-12 py-20 md:py-32 max-w-2xl">
+    <section id="resume" className="px-6 md:px-12 py-20 md:py-32 max-w-2xl">
       <div className="space-y-16">
         {/* Section Header */}
         <div>
@@ -24,7 +25,7 @@ export default function ResumeSection() {
         {/* Download Resume Button */}
         <div className="flex flex-col sm:flex-row gap-4">
           <a
-            href={resumeUrl}
+            href={downloadUrl}
             download={resumeFileName}
             className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-accent hover:bg-accent/90 text-accent-foreground font-semibold smooth-transition"
           >
@@ -32,11 +33,13 @@ export default function ResumeSection() {
             Download Full Resume
           </a>
           <a
-            href={RESUME_PAGE_URL}
+            href={resumeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-white/20 hover:bg-white/5 text-foreground font-semibold smooth-transition"
           >
             <ExternalLink size={20} />
-            View Online
+            Open PDF
           </a>
         </div>
       </div>

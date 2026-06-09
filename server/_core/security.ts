@@ -42,8 +42,10 @@ export function registerSecurityHeaders(app: Express) {
   });
 
   app.use((req: Request, res: Response, next: NextFunction) => {
+    const isPdfDocument = req.path.startsWith("/documents/") && req.path.toLowerCase().endsWith(".pdf");
+
     res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader("X-Frame-Options", isPdfDocument ? "SAMEORIGIN" : "DENY");
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
     res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=(self), interest-cohort=()");
     res.setHeader("Cross-Origin-Opener-Policy", "same-origin");

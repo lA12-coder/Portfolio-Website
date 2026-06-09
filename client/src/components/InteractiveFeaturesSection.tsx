@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { trpc } from '@/lib/trpc';
 import { AIChatBox, type Message } from '@/components/AIChatBox';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { Brain, Cloud, CloudRain, Loader2, Sparkles, Sun, Upload, Wind, Droplets } from 'lucide-react';
+import { Brain, Loader2, Sparkles, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 
 type AnalysisResult = {
@@ -230,113 +230,11 @@ function ResumeAnalyzer({ visitorId }: { visitorId: string }) {
   );
 }
 
-function WeatherWidget() {
-  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [permissionError, setPermissionError] = useState(false);
-
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setPermissionError(true);
-      setCoords({ latitude: 9.03, longitude: 38.74 });
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setCoords({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
-      },
-      () => {
-        setPermissionError(true);
-        setCoords({ latitude: 9.03, longitude: 38.74 });
-      },
-      { maximumAge: 1000 * 60 * 30, timeout: 6000 }
-    );
-  }, []);
-
-  const weatherQuery = trpc.weather.getCurrent.useQuery(
-    coords ?? { latitude: 9.03, longitude: 38.74 },
-    { enabled: Boolean(coords) }
-  );
-
-  const weather = weatherQuery.data;
-
-  useEffect(() => {
-    if (!weather) return;
-    window.dispatchEvent(
-      new CustomEvent('portfolio-weather-change', {
-        detail: {
-          mood: weather.mood,
-          condition: weather.condition,
-          isNight: weather.mood === 'night',
-        },
-      })
-    );
-  }, [weather]);
-
-  const Icon = useMemo(() => {
-    const condition = weather?.condition.toLowerCase() ?? '';
-    if (condition.includes('rain') || condition.includes('storm')) return CloudRain;
-    if (condition.includes('cloud') || condition.includes('mist') || condition.includes('fog')) return Cloud;
-    return Sun;
-  }, [weather?.condition]);
-
-  return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-2xl font-bold tracking-tight">Weather Mood</h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Local weather updates the network animation palette.
-        </p>
-      </div>
-
-      <div className="rounded-lg border border-white/10 bg-white/5 p-5">
-        {!weather || weatherQuery.isLoading ? (
-          <div className="flex items-center gap-3 text-muted-foreground">
-            <Loader2 size={18} className="animate-spin text-accent" />
-            Detecting weather mood...
-          </div>
-        ) : (
-          <div className="space-y-5">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">{weather.location}</p>
-                <p className="text-4xl font-bold text-foreground">{weather.temperature}°C</p>
-              </div>
-              <div className="flex h-14 w-14 items-center justify-center rounded-lg border border-accent/30 bg-accent/15 text-accent">
-                <Icon size={28} />
-              </div>
-            </div>
-
-            <p className="text-sm text-muted-foreground">
-              {weather.condition}
-              {weather.isFallback || permissionError ? ' · fallback data' : ''}
-            </p>
-
-            <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2 rounded-lg bg-white/5 p-3">
-                <Droplets size={16} className="text-accent" />
-                {weather.humidity}% humidity
-              </div>
-              <div className="flex items-center gap-2 rounded-lg bg-white/5 p-3">
-                <Wind size={16} className="text-accent" />
-                {weather.windSpeed} m/s wind
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function InteractiveFeaturesSection() {
   const [visitorId] = useState(() => createVisitorId());
 
   return (
-    <section id="interactive" className="px-6 md:px-12 py-20 md:py-32 max-w-2xl">
+    <section id="lab" className="px-6 md:px-12 py-20 md:py-32 max-w-2xl">
       <div className="space-y-16">
         <div>
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-muted-foreground">
@@ -346,13 +244,12 @@ export default function InteractiveFeaturesSection() {
           <h2 className="text-4xl font-bold tracking-tight mb-4">Interactive Lab</h2>
           <div className="w-12 h-1 bg-gradient-to-r from-accent to-transparent rounded-full" />
           <p className="text-muted-foreground mt-4">
-            Ask the portfolio, compare a job description, and let local weather tint the animated network.
+            Ask the portfolio assistant and compare a job description against Lidet's resume.
           </p>
         </div>
 
         <RagChatAssistant visitorId={visitorId} />
         <ResumeAnalyzer visitorId={visitorId} />
-        <WeatherWidget />
       </div>
     </section>
   );

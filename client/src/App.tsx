@@ -12,7 +12,6 @@ const Home = lazy(() => import("./pages/Home"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const BlogListPage = lazy(() => import("@/pages/BlogListPage"));
 const BlogPostPage = lazy(() => import("@/pages/BlogPostPage"));
-const ResumePage = lazy(() => import("@/pages/ResumePage"));
 
 function RouteLoader() {
   return (
@@ -27,10 +26,12 @@ function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
+      <Route path={"/"}>{() => <Home page="home" />}</Route>
+      <Route path={"/about"}>{() => <Home page="about" />}</Route>
+      <Route path={"/experience"}>{() => <Home page="experience" />}</Route>
+      <Route path={"/contact"}>{() => <Home page="contact" />}</Route>
       <Route path={"/blog"} component={BlogListPage} />
       <Route path={"/blog/:slug"} component={BlogPostPage} />
-      <Route path={"/vc"} component={ResumePage} />
       <Route path={"/admin"} component={AdminDashboard} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

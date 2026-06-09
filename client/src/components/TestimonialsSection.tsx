@@ -70,7 +70,7 @@ export default function TestimonialsSection() {
   };
 
   return (
-    <section id="testimonials" className="px-6 md:px-12 py-20 md:py-32 max-w-2xl">
+    <section id="feedback" className="px-6 md:px-12 py-20 md:py-32 max-w-2xl">
       <div className="space-y-16">
         {/* Section Header */}
         <div>

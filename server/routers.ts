@@ -53,6 +53,7 @@ import {
 } from "./db";
 import { notifyNewsletterSubscribers, notifyOwner } from "./_core/notification";
 import { invokeLLM } from "./_core/llm";
+import { cached, invalidateCache } from "./_core/cache";
 import {
   LIDET_PROFILE_CONTEXT,
   chunkText,
@@ -175,6 +176,20 @@ const blogPostInputSchema = z.object({
 
 const maxResumePdfBytes = 8 * 1024 * 1024;
 const resumePdfUrl = "/api/resume/pdf";
+const fallbackResumePdfUrl = "/documents/lidet-admassu-resume.pdf";
+const publicCacheKeys = [
+  "portfolio:projects",
+  "portfolio:skills",
+  "portfolio:experiences",
+  "portfolio:certificates",
+  "portfolio:blog-posts",
+  "portfolio:testimonials",
+  "portfolio:resume",
+];
+
+async function invalidatePublicPortfolioCache(...keys: string[]) {
+  await invalidateCache(keys.length > 0 ? keys : publicCacheKeys);
+}
 
 const resumePdfDataUrlSchema = z.string().refine(
   (value) => /^data:application\/pdf;base64,[a-z0-9+/=\s]+$/i.test(value),
@@ -186,7 +201,7 @@ function resumeResponse(asset: Awaited<ReturnType<typeof getLatestResumeAsset>>)
     return {
       source: "fallback" as const,
       fileName: "lidet-admassu-resume.pdf",
-      url: resumePdfUrl,
+      url: fallbackResumePdfUrl,
       byteSize: null,
       updatedAt: null,
     };
@@ -254,19 +269,19 @@ export const appRouter = router({
 
   portfolio: router({
     getProjects: publicProcedure.query(async () => {
-      return getProjects();
+      return cached("portfolio:projects", 300, getProjects);
     }),
     getSkills: publicProcedure.query(async () => {
-      return getSkills();
+      return cached("portfolio:skills", 300, getSkills);
     }),
     getExperiences: publicProcedure.query(async () => {
-      return getExperiences();
+      return cached("portfolio:experiences", 300, getExperiences);
     }),
     getCertificates: publicProcedure.query(async () => {
-      return getCertificates();
+      return cached("portfolio:certificates", 300, getCertificates);
     }),
     getBlogPosts: publicProcedure.query(async () => {
-      return getPublishedBlogPosts();
+      return cached("portfolio:blog-posts", 300, getPublishedBlogPosts);
     }),
     getBlogPostBySlug: publicProcedure
       .input(z.object({ slug: z.string().min(1).max(180) }))
@@ -280,10 +295,10 @@ export const appRouter = router({
         return post;
       }),
     getTestimonials: publicProcedure.query(async () => {
-      return getApprovedTestimonials();
+      return cached("portfolio:testimonials", 300, getApprovedTestimonials);
     }),
     getResume: publicProcedure.query(async () => {
-      return resumeResponse(await getLatestResumeAsset());
+      return cached("portfolio:resume", 300, async () => resumeResponse(await getLatestResumeAsset()));
     }),
   }),
   newsletter: router({
@@ -345,6 +360,7 @@ export const appRouter = router({
           title: "New Feedback Submission",
           content: `From: ${input.name}\nRating: ${input.rating}/5\n\n${input.feedback}`,
         });
+        await invalidateCache(["portfolio:testimonials"]);
         return { success: true };
       }),
   }),
@@ -497,76 +513,6 @@ export const appRouter = router({
         return result;
       }),
   }),
-  weather: router({
-    getCurrent: publicProcedure
-      .input(z.object({
-        latitude: z.number().min(-90).max(90),
-        longitude: z.number().min(-180).max(180),
-      }))
-      .query(async ({ input }) => {
-        const fallbackHour = new Date().getHours();
-        const fallbackMood = fallbackHour < 6 || fallbackHour >= 19 ? "night" : "sunny";
-
-        if (!process.env.OPENWEATHER_API_KEY) {
-          return {
-            temperature: 22,
-            condition: fallbackMood === "night" ? "Clear night" : "Clear",
-            humidity: 48,
-            windSpeed: 2,
-            location: "Your area",
-            mood: fallbackMood,
-            isFallback: true,
-          };
-        }
-
-        try {
-          const params = new URLSearchParams({
-            lat: String(input.latitude),
-            lon: String(input.longitude),
-            appid: process.env.OPENWEATHER_API_KEY,
-            units: "metric",
-          });
-          const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?${params.toString()}`);
-
-          if (!response.ok) {
-            throw new Error(`Weather API failed: ${response.status}`);
-          }
-
-          const data = await response.json();
-          const condition = String(data.weather?.[0]?.main ?? "Clear");
-          const isNight = String(data.weather?.[0]?.icon ?? "").endsWith("n");
-          const lowerCondition = condition.toLowerCase();
-          const mood = isNight
-            ? "night"
-            : lowerCondition.includes("rain") || lowerCondition.includes("storm")
-              ? "rainy"
-              : lowerCondition.includes("cloud") || lowerCondition.includes("mist") || lowerCondition.includes("fog")
-                ? "cloudy"
-                : "sunny";
-
-          return {
-            temperature: Math.round(Number(data.main?.temp ?? 22)),
-            condition,
-            humidity: Number(data.main?.humidity ?? 0),
-            windSpeed: Math.round(Number(data.wind?.speed ?? 0)),
-            location: String(data.name || "Your area"),
-            mood,
-            isFallback: false,
-          };
-        } catch (error) {
-          console.warn("[Weather] Using fallback weather:", error);
-          return {
-            temperature: 22,
-            condition: fallbackMood === "night" ? "Clear night" : "Clear",
-            humidity: 48,
-            windSpeed: 2,
-            location: "Your area",
-            mood: fallbackMood,
-            isFallback: true,
-          };
-        }
-      }),
-  }),
   admin: router({
     getProjects: adminProcedure.query(async () => {
       return getProjects();
@@ -575,18 +521,21 @@ export const appRouter = router({
       .input(projectInputSchema)
       .mutation(async ({ input }) => {
         await createProject(projectValues(input));
+        await invalidatePublicPortfolioCache("portfolio:projects");
         return { success: true };
       }),
     updateProject: adminProcedure
       .input(z.object({ id: z.number().int().positive(), data: projectInputSchema }))
       .mutation(async ({ input }) => {
         await updateProject(input.id, projectValues(input.data));
+        await invalidatePublicPortfolioCache("portfolio:projects");
         return { success: true };
       }),
     deleteProject: adminProcedure
       .input(z.object({ id: z.number().int().positive() }))
       .mutation(async ({ input }) => {
         await deleteProject(input.id);
+        await invalidatePublicPortfolioCache("portfolio:projects");
         return { success: true };
       }),
     getTestimonials: adminProcedure.query(async () => {
@@ -596,18 +545,21 @@ export const appRouter = router({
       .input(testimonialInputSchema)
       .mutation(async ({ input }) => {
         await createTestimonial(input);
+        await invalidatePublicPortfolioCache("portfolio:testimonials");
         return { success: true };
       }),
     updateTestimonial: adminProcedure
       .input(z.object({ id: z.number().int().positive(), data: testimonialInputSchema }))
       .mutation(async ({ input }) => {
         await updateTestimonial(input.id, input.data);
+        await invalidatePublicPortfolioCache("portfolio:testimonials");
         return { success: true };
       }),
     deleteTestimonial: adminProcedure
       .input(z.object({ id: z.number().int().positive() }))
       .mutation(async ({ input }) => {
         await deleteTestimonial(input.id);
+        await invalidatePublicPortfolioCache("portfolio:testimonials");
         return { success: true };
       }),
     getSkills: adminProcedure.query(async () => {
@@ -617,18 +569,21 @@ export const appRouter = router({
       .input(skillInputSchema)
       .mutation(async ({ input }) => {
         await createSkill(input);
+        await invalidatePublicPortfolioCache("portfolio:skills");
         return { success: true };
       }),
     updateSkill: adminProcedure
       .input(z.object({ id: z.number().int().positive(), data: skillInputSchema }))
       .mutation(async ({ input }) => {
         await updateSkill(input.id, input.data);
+        await invalidatePublicPortfolioCache("portfolio:skills");
         return { success: true };
       }),
     deleteSkill: adminProcedure
       .input(z.object({ id: z.number().int().positive() }))
       .mutation(async ({ input }) => {
         await deleteSkill(input.id);
+        await invalidatePublicPortfolioCache("portfolio:skills");
         return { success: true };
       }),
     getExperiences: adminProcedure.query(async () => {
@@ -638,18 +593,21 @@ export const appRouter = router({
       .input(experienceInputSchema)
       .mutation(async ({ input }) => {
         await createExperience(experienceValues(input));
+        await invalidatePublicPortfolioCache("portfolio:experiences");
         return { success: true };
       }),
     updateExperience: adminProcedure
       .input(z.object({ id: z.number().int().positive(), data: experienceInputSchema }))
       .mutation(async ({ input }) => {
         await updateExperience(input.id, experienceValues(input.data));
+        await invalidatePublicPortfolioCache("portfolio:experiences");
         return { success: true };
       }),
     deleteExperience: adminProcedure
       .input(z.object({ id: z.number().int().positive() }))
       .mutation(async ({ input }) => {
         await deleteExperience(input.id);
+        await invalidatePublicPortfolioCache("portfolio:experiences");
         return { success: true };
       }),
     getCertificates: adminProcedure.query(async () => {
@@ -659,18 +617,21 @@ export const appRouter = router({
       .input(certificateInputSchema)
       .mutation(async ({ input }) => {
         await createCertificate(certificateValues(input));
+        await invalidatePublicPortfolioCache("portfolio:certificates");
         return { success: true };
       }),
     updateCertificate: adminProcedure
       .input(z.object({ id: z.number().int().positive(), data: certificateInputSchema }))
       .mutation(async ({ input }) => {
         await updateCertificate(input.id, certificateValues(input.data));
+        await invalidatePublicPortfolioCache("portfolio:certificates");
         return { success: true };
       }),
     deleteCertificate: adminProcedure
       .input(z.object({ id: z.number().int().positive() }))
       .mutation(async ({ input }) => {
         await deleteCertificate(input.id);
+        await invalidatePublicPortfolioCache("portfolio:certificates");
         return { success: true };
       }),
     getBlogPosts: adminProcedure.query(async () => {
@@ -682,6 +643,7 @@ export const appRouter = router({
         const values = blogPostValues(input);
         await createBlogPost(values);
         await notifySubscribersForPost(values);
+        await invalidatePublicPortfolioCache("portfolio:blog-posts");
         return { success: true };
       }),
     updateBlogPost: adminProcedure
@@ -695,12 +657,14 @@ export const appRouter = router({
           await notifySubscribersForPost(values);
         }
 
+        await invalidatePublicPortfolioCache("portfolio:blog-posts");
         return { success: true };
       }),
     deleteBlogPost: adminProcedure
       .input(z.object({ id: z.number().int().positive() }))
       .mutation(async ({ input }) => {
         await deleteBlogPost(input.id);
+        await invalidatePublicPortfolioCache("portfolio:blog-posts");
         return { success: true };
       }),
     getContactSubmissions: adminProcedure.query(async () => {
@@ -731,12 +695,14 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await approveTestimonial(input.id);
+        await invalidatePublicPortfolioCache("portfolio:testimonials");
         return { success: true };
       }),
     rejectTestimonial: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await deleteTestimonial(input.id);
+        await invalidatePublicPortfolioCache("portfolio:testimonials");
         return { success: true };
       }),
     getChatLogs: adminProcedure.query(async () => {
@@ -772,6 +738,7 @@ export const appRouter = router({
           byteSize,
         });
 
+        await invalidatePublicPortfolioCache("portfolio:resume");
         return resumeResponse(asset);
       }),
     uploadRagContent: adminProcedure

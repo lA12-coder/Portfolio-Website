@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 export default function ResumePage() {
   const resumeQuery = trpc.portfolio.getResume.useQuery();
   const resumeUrl = assetUrl(resumeQuery.data?.url ?? RESUME_PDF_URL);
+  const downloadUrl = resumeUrl.includes("/api/resume/pdf") ? `${resumeUrl}?download=1` : resumeUrl;
   const resumeFileName = resumeQuery.data?.fileName ?? "lidet-admassu-resume.pdf";
   const updatedAt = resumeQuery.data?.updatedAt
     ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(resumeQuery.data.updatedAt))
@@ -32,7 +33,7 @@ export default function ResumePage() {
                 Lidet Admassu Resume
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
-                Software Engineer and AI Specialist. View the resume here or download the PDF.
+                Software Engineer and AI Specialist. Download the resume or open the PDF directly.
               </p>
               {updatedAt && (
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -44,7 +45,7 @@ export default function ResumePage() {
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <a
-              href={resumeUrl}
+              href={downloadUrl}
               download={resumeFileName}
               className={cn(buttonVariants({ size: "lg" }), "rounded-lg")}
             >
@@ -63,15 +64,8 @@ export default function ResumePage() {
           </div>
         </header>
 
-        <section
-          aria-label="Resume preview"
-          className="min-h-0 flex-1 overflow-hidden rounded-lg border border-white/10 bg-white/5"
-        >
-          <iframe
-            title="Lidet Admassu resume PDF"
-            src={`${resumeUrl}#view=FitH`}
-            className="h-[78vh] min-h-[620px] w-full bg-white"
-          />
+        <section className="rounded-lg border border-white/10 bg-white/5 p-6 text-sm leading-6 text-muted-foreground">
+          The embedded resume preview has been removed. Use the buttons above to download the file or open the PDF in your browser.
         </section>
       </div>
     </main>

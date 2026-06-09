@@ -1,6 +1,7 @@
 const CACHE_NAME = "lidet-portfolio-v1";
 const STATIC_ASSETS = [
   "/",
+  "/documents/lidet-admassu-resume.pdf",
   "/images/lidet-admassu-profile.webp",
   "/images/lidet-admassu-profile.png",
 ];

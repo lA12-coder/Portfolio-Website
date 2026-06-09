@@ -28,7 +28,7 @@ export default function BlogListPage() {
   return (
     <PortfolioLayout>
       <main id="blog" className="px-6 md:px-12 py-20 md:py-32 max-w-5xl">
-        <a href="/#blog" className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-accent hover:underline">
+        <a href="/" className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-accent hover:underline">
           <ArrowLeft size={16} />
           Back to Home
         </a>
